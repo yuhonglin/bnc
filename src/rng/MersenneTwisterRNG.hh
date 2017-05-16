@@ -1,18 +1,45 @@
+#ifndef _MERSENNE_TWISTER_RNG_H_
+#define _MERSENNE_TWISTER_RNG_H_
+
 #include <ctime>
-#include "MersenneTwisterRNG.h"
+
+#include <rng/RmathRNG.hh>
+#include <rng/MersenneTwisterRNG.hh>
+
+
+namespace bnc {
+
+    template<NormKind norm_kind>
+    class MersenneTwisterRNG : public RmathRNG<norm_kind, MersenneTwisterRNG<norm_kind> >
+    {
+	unsigned int dummy[625];
+	unsigned int *mt; /* the array for the state vector */
+	int mti;
+	void fixupSeeds(bool init);
+	void MT_sgenrand(unsigned int seed);
+    public:
+	MersenneTwisterRNG(unsigned int seed);
+	void init(unsigned int seed);
+	bool setState(std::vector<int> const &state);
+	void getState(std::vector<int> &state) const;
+	double uniform();
+    };
+
+}
+
 
 /* ===================  Mersenne Twister ========================== */
 /* From http://www.math.keio.ac.jp/~matumoto/emt.html */
 
 /* A C-program for MT19937: Real number version([0,1)-interval)
    (1999/10/28)
-     genrand() generates one pseudorandom real number (double)
+   genrand() generates one pseudorandom real number (double)
    which is uniformly distributed on [0,1)-interval, for each
    call. sgenrand(seed) sets initial values to the working area
    of 624 words. Before genrand(), sgenrand(seed) must be
    called once. (seed is any 32-bit integer.)
    Integer generator is obtained by modifying two lines.
-     Coded by Takuji Nishimura, considering the suggestions by
+   Coded by Takuji Nishimura, considering the suggestions by
    Topher Cooper and Marc Rieffel in July-Aug. 1997.
 
    Copyright (C) 1997, 1999 Makoto Matsumoto and Takuji Nishimura.
@@ -44,18 +71,18 @@
 
 using std::vector;
 
-namespace jags {
-namespace base {
-
-    MersenneTwisterRNG::MersenneTwisterRNG(unsigned int seed, 
-					   NormKind norm_kind)
-	: RmathRNG("base::Mersenne-Twister", norm_kind), mt(dummy+1), mti(N+1)
+namespace bnc {
+        
+    template<NormKind norm_kind>
+    MersenneTwisterRNG<norm_kind>::MersenneTwisterRNG(unsigned int seed)
+	: RmathRNG<norm_kind, MersenneTwisterRNG<norm_kind> >("base::Mersenne-Twister"), mt(dummy+1), mti(N+1)
     {
 	/* mti==N+1 means mt[N] is not initialized */
 	init(seed);
     }
 
-    void MersenneTwisterRNG::MT_sgenrand(unsigned int seed)
+    template<NormKind norm_kind>
+    void MersenneTwisterRNG<norm_kind>::MT_sgenrand(unsigned int seed)
     {
 	int i;
   
@@ -76,7 +103,8 @@ namespace base {
    (seed_array[0]&UPPER_MASK), seed_array[1], ..., seed_array[N-1]
    can take any values except all zeros.                             */
 
-    double MersenneTwisterRNG::uniform()
+    template<NormKind norm_kind>
+    double MersenneTwisterRNG<norm_kind>::uniform()
     {
 	unsigned int y;
 	static const unsigned int mag01[2]={0x0, MATRIX_A};
@@ -88,7 +116,7 @@ namespace base {
 	    int kk;
 
 	    if (mti == N+1)   /* if init() has not been called, */
-		MT_sgenrand(4357); /* a default initial seed is used   */
+		this->MT_sgenrand(4357); /* a default initial seed is used   */
 
 	    for (kk = 0; kk < N - M; kk++) {
 		y = (mt[kk] & UPPER_MASK) | (mt[kk+1] & LOWER_MASK);
@@ -112,10 +140,11 @@ namespace base {
 	dummy[0] = mti;
 
 	/* reals: [0,1)-interval */
-	return fixup( (double)y * 2.3283064365386963e-10 ); 
+	return this->fixup( (double)y * 2.3283064365386963e-10 ); 
     }
 
-    void MersenneTwisterRNG::init(unsigned int seed)
+    template<NormKind norm_kind>
+    void MersenneTwisterRNG<norm_kind>::init(unsigned int seed)
     {
 	/* Initial scrambling */
 	for(unsigned int j = 0; j < 50; j++)
@@ -128,7 +157,8 @@ namespace base {
 	fixupSeeds(true);
     }
 
-    void MersenneTwisterRNG::fixupSeeds(bool initial)
+    template<NormKind norm_kind>
+    void MersenneTwisterRNG<norm_kind>::fixupSeeds(bool initial)
     {	
 	//bool notallzero = false;
   
@@ -152,7 +182,8 @@ namespace base {
 	return false;
     }
 
-    bool MersenneTwisterRNG::setState(vector<int> const &state)
+    template<NormKind norm_kind>
+    bool MersenneTwisterRNG<norm_kind>::setState(vector<int> const &state)
     {
 	if (state.size() != 625)
 	    return false;
@@ -165,7 +196,8 @@ namespace base {
 	return notAllZero(dummy);
     }
 
-    void MersenneTwisterRNG::getState(vector<int> &state) const
+    template<NormKind norm_kind>
+    void MersenneTwisterRNG<norm_kind>::getState(vector<int> &state) const
     {
 	state.clear();
 	state.reserve(625);
@@ -174,4 +206,7 @@ namespace base {
 	}
     }
 
-}}
+}
+
+
+#endif /* MERSENNE_TWISTER_RNG_H_ */
