@@ -67,7 +67,7 @@ namespace jags {
                 seed = (69069 * seed + 1);
                 I[j] = seed;
             }
-            fixupSeeds();
+            this->fixupSeeds();
         }
 
         template<NormKind norm_kind>
@@ -79,7 +79,7 @@ namespace jags {
             for (unsigned int i = 0; i < 3; ++i) {
                 I[i] = static_cast<unsigned int>(state[i]);
             }
-            fixupSeeds();
+            this->fixupSeeds();
             return true;
         }
 
