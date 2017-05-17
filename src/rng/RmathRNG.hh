@@ -7,7 +7,7 @@
 
 #include <config.hh>
 
-#include <rng/RNG.hh>
+#include <rng/BasicRNG.hh>
 #include <rng/RmathRNG.hh>
 
 

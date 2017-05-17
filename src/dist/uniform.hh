@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include <dist/dist.hh>
-#include <rng/allrng.hh>
+#include <rng/rng.hh>
 #include <util/logger.hh>
 
 namespace bnc {

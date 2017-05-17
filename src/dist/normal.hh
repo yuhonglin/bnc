@@ -7,76 +7,8 @@
 using namespace std;
 
 #include <dist/dist.hh>
-#include <rng/allrng.hh>
+#include <rng/rng.hh>
 #include <util/logger.hh>
-
-#define SET_0(x) x = ((scale_p==NOR_P)?					\
-		      0. :						\
-		      -std::numeric_limits<double>::infinity())
-
-#define SET_1(x) x = ((scale_p==NOR_P)? 1. : 0.)
-
-
-#define RET_0 return ((scale_p==NOR_P)?					\
-		      0. :						\
-		      -std::numeric_limits<double>::infinity())
-
-#define RET_1 return ((scale_p==NOR_P)? 1. : 0.)
-
-#define RET_POSINF return std::numeric_limits<double>::infinity()
-
-#define RET_NEGINF return -std::numeric_limits<double>::infinity()
-
-#define RET_NAN(s) { LOG_WARNING(s);				\
-	return std::numeric_limits<double>::quiet_NaN(); }
-
-#define SET_NAN_RT(x, s) { LOG_WARNING(s);			\
-	x = std::numeric_limits<double>::quiet_NaN();		\
-	return; }						
-
-
-#define R_D_Lval(p)	((tail_p==TAIL_LOWER) ? (p) : (0.5 - (p) + 0.5))	/*  p  */
-#define R_D_Cval(p)	((tail_p==TAIL_LOWER) ? (0.5 - (p) + 0.5) : (p))	/*  1 - p */
-
-#define R_DT_CIv(p)	((scale_p==LOG_P) ? ((tail_p==TAIL_LOWER) ? \
-					     -expm1(p) : exp(p))    \
-			 : R_D_Cval(p))
-
-
-#define R_DT_qIv(p)	((scale_p==LOG_P) ? ((tail_p==TAIL_LOWER)	\
-						 ? exp(p) : - expm1(p)) \
-			 : R_D_Lval(p))					\
-			 
-
-/* Do the boundaries exactly for q*() functions :
- * Often  _LEFT_ = ML_NEGINF , and very often _RIGHT_ = ML_POSINF;
- *
- * R_Q_P01_boundaries(p, _LEFT_, _RIGHT_)  :<==>
- *
- *     R_Q_P01_check(p);
- *     if (p == R_DT_0) return _LEFT_ ;
- *     if (p == R_DT_1) return _RIGHT_;
- *
- * the following implementation should be more efficient (less tests):
- */
-#define R_Q_P01_boundaries(p, _LEFT_, _RIGHT_)			\
-    if (scale_p==LOG_P) {					\
-	if(p > 0)						\
-	    RET_NAN("log(p)>0, return NaN");			\
-	if(p == 0) /* upper bound*/				\
-	    return (tail_p==TAIL_LOWER) ? _RIGHT_ : _LEFT_;	\
-	if(p == -numeric_limits<double>::infinity())			\
-	    return (tail_p==TAIL_LOWER) ? _LEFT_ : _RIGHT_;	\
-    }								\
-    else { /* !log_p */						\
-	if(p < 0 || p > 1)					\
-	    RET_NAN("p<0 or p>1, return NaN");			\
-	if(p == 0)						\
-	    return (tail_p==TAIL_LOWER) ? _LEFT_ : _RIGHT_;	\
-	if(p == 1)						\
-	    return (tail_p==TAIL_LOWER) ? _RIGHT_ : _LEFT_;	\
-    }
-
 
 
 namespace bnc {
