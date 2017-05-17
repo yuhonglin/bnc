@@ -5,6 +5,7 @@
 #include <cmath>
 
 #include <dist/dist.hh>
+#include <dist/rmath.hh>
 #include <rng/rng.hh>
 #include <util/logger.hh>
 

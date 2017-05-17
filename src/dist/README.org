@@ -1,0 +1,41 @@
+* Distributions
+
+This folder provide functions on distributions. For each distribution ```dist```, it should provide 
+three functions, namely 
+
+- ```ddist```: evalute the density of a sample given parameters
+- ```pdist```: evalute the cumulative probability of a sample given parameters
+- ```rnorm```: draw a sample given parameters
+
+Since the results of ```ddist``` and ```pdist``` are always scalars, so the results are given by 
+returned value. For mutivariate distributions, the results of ```rnorm``` can be an array. To make
+all interface identical, we use the first argument as the return value.
+
+
+* Todo
+** Basic R distributions
+*** DONE Normal Distribution
+*** DONE Uniform Distribution
+*** Gamma Distribution
+*** Beta Distribution
+*** Lognormal Distribution
+*** Chi-squared Distribution
+*** Non-central Chi-squared Distribution
+*** F Distibution
+*** Student t Distibution
+*** Binomial Distribution
+*** Multnomial Distribution
+*** Cauchy Distribution
+*** Exponential Distribution
+*** Geometric Distribution
+*** Hypergeometric Distibution
+*** Negative Binomial Distribution
+*** Poisson Distribution
+*** Weibull Distribution with shape-scale parameterization
+*** Weibull Distribution with shape-rate parameterization
+*** Logistic Distribution
+*** Non-central Beta Distribution
+*** Non-central F Distribution
+*** Non-central Student t Distribution
+*** Studentized Range Distribution
+*** Wilcoxon Rank Sum Distribution
