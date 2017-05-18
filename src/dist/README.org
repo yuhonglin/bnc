@@ -16,7 +16,7 @@ all interface identical, we use the first argument as the return value.
 ** Basic R distributions
 *** DONE Normal Distribution
 *** DONE Uniform Distribution
-*** Gamma Distribution
+*** DONE Gamma Distribution
 *** Beta Distribution
 *** Lognormal Distribution
 *** Chi-squared Distribution
