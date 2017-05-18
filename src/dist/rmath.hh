@@ -235,6 +235,18 @@ namespace bnc {
 #define R_DT_Log(p)	((scale_p==LOG_P)? (p) : R_Log1_Exp(p))
 
 #define R_FINITE(p)     isfinite(p)
+
+# define R_forceint(x)   nearbyint(x)
+# define R_nonint(x)    (fabs((x) - R_forceint(x)) > 1e-7*fmax2(1., fabs(x)))    
+/* [neg]ative or [non int]eger : */
+#define R_D_negInonint(x) (x < 0. || R_nonint(x))
+
+// for discrete d<distr>(x, ...) :
+#define R_D_nonint_check(x) 				\
+   if(R_nonint(x)) {					\
+       LOG_WARNING("non-integer x");			\
+       return R_D__0;					\
+   }
     
 }
 
