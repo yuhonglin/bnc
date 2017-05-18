@@ -208,6 +208,35 @@ namespace bnc {
     if(x <= x_min) return R_DT_0;		\
     if(x >= x_max) return R_DT_1
 
+#define R_Q_P01_check(p)			\
+    if ((log_p	&& p > 0) ||			\
+	(!log_p && (p < 0 || p > 1)) )		\
+	ML_ERR_return_NAN
+
+/* Use 0.5 - p + 0.5 to perhaps gain 1 bit of accuracy */
+
+#define R_D_val(x)	((scale_p==LOG_P)	? log(x) : (x))		/*  x  in pF(x,..) */
+#define R_D_qIv(p)	((scale_p==LOG_P)	? exp(p) : (p))		/*  p  in qF(p,..) */
+#define R_D_exp(x)	((scale_p==LOG_P)	?  (x)	 : exp(x))	/* exp(x) */
+#define R_D_log(p)	((scale_p==LOG_P)	?  (p)	 : log(p))	/* log(p) */
+#define R_D_Clog(p)	((scale_p==LOG_P)	? log1p(-(p)) : (0.5 - (p) + 0.5)) /* [log](1-p) */
+
+// log(1 - exp(x))  in more stable form than log1p(- R_D_qIv(x)) :
+#define R_Log1_Exp(x)   ((x) > -M_LN2 ? log(-expm1(x)) : log1p(-exp(x)))
+
+/* log(1-exp(x)):  R_D_LExp(x) == (log1p(- R_D_qIv(x))) but even more stable:*/
+#define R_D_LExp(x)     ((scale_p==LOG_P) ? R_Log1_Exp(x) : log1p(-x))
+
+#define R_DT_val(x)	((scale_p==LOG_P) ? R_D_val(x)  : R_D_Clog(x))
+#define R_DT_Cval(x)	((scale_p==LOG_P) ? R_D_Clog(x) : R_D_val(x))
+
+#define R_DT_log(p)	((scale_p==LOG_P)? R_D_log(p) : R_D_LExp(p))/* log(p) in qF */
+#define R_DT_Clog(p)	((scale_p==LOG_P)? R_D_LExp(p): R_D_log(p))/* log(1-p) in qF*/
+#define R_DT_Log(p)	((scale_p==LOG_P)? (p) : R_Log1_Exp(p))
+
+#define R_FINITE(p)     isfinite(p)
+    
 }
+
 
 #endif /* RMATH_H */
