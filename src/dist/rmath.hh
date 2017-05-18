@@ -1,6 +1,8 @@
 #ifndef RMATH_H
 #define RMATH_H
 
+#include <common/math.hh>
+
 namespace bnc {
     
 /* Implmentation helpers */
@@ -173,6 +175,38 @@ namespace bnc {
 	if(p == 1)						\
 	    return (tail_p==TAIL_LOWER) ? _RIGHT_ : _LEFT_;	\
     }
+
+/* additions for density functions (C.Loader) */
+#define R_D_fexp(f,x)     ((scale_p==LOG_P) ? -0.5*log(f)+(x) : exp(x)/sqrt(f))
+
+    
+#define ML_ERR_return_NAN RET_NAN("return NaN")
+#define ISNAN(x)   isnan(x)
+#define ML_POSINF  (numeric_limits<double>::infinity())
+#define ML_NEGINF  (-numeric_limits<double>::infinity())
+#define ML_NAN  (numeric_limits<double>::quiet_NaN())
+#define R_D__0     ((scale_p==NOR_P)?				\
+		    0. :					\
+		    -std::numeric_limits<double>::infinity())
+#define R_D__1     ((scale_p==NOR_P)? 1. : 0.)
+#ifndef DBL_MIN
+#define DBL_MIN    (numeric_limits<double>::min())
+#endif
+#ifndef DBL_EPSILON
+#define DBL_EPSILON numeric_limits<double>::epsilon()
+#endif
+#define R_Log1_Exp(x)   ((x) > -M_LN2 ? log(-expm1(x)) : log1p(-exp(x)))    
+
+#define R_D_exp(x) ((scale_p==LOG_P)  ?  (x)	 : exp(x))	/* exp(x) */
+
+#define ISNAN(x)   isnan(x)
+
+#define R_DT_0	(tail_p==TAIL_LOWER ? R_D__0 : R_D__1)		/* 0 */
+#define R_DT_1	(tail_p==TAIL_LOWER ? R_D__1 : R_D__0)		/* 1 */
+
+#define R_P_bounds_01(x, x_min, x_max)		\
+    if(x <= x_min) return R_DT_0;		\
+    if(x >= x_max) return R_DT_1
 
 }
 

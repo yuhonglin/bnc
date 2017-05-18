@@ -9,7 +9,7 @@
 
 #include <rng/BasicRNG.hh>
 #include <rng/RmathRNG.hh>
-
+#include <common/math.hh>
 
 #define repeat for(;;)
 
@@ -51,15 +51,6 @@ namespace bnc {
 
 namespace bnc {
     
-    static inline double fmin2(double x, double y) {
-	return (x < y) ? x : y;
-    }
-
-    static inline double fmax2(double x, double y)
-    {
-	return (x < y) ? y : x;
-    }
-
     template<NormKind _N01_kind, class Derived>
     RmathRNG<_N01_kind, Derived>::RmathRNG(string const &name)
 	: RNG(name), _BM_norm_keep(0)
