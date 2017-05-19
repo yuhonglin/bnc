@@ -247,6 +247,8 @@ namespace bnc {
        LOG_WARNING("non-integer x");			\
        return R_D__0;					\
    }
+
+typedef enum { FALSE = 0, TRUE } Rboolean;
     
 }
 
