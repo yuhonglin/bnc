@@ -1,0 +1,3 @@
+/Users/honglinyu/workspace/jags/bnc/src/dist/jrmath/build/CMakeFiles/rebuild_cache.dir
+/Users/honglinyu/workspace/jags/bnc/src/dist/jrmath/build/CMakeFiles/edit_cache.dir
+/Users/honglinyu/workspace/jags/bnc/src/dist/jrmath/build/CMakeFiles/jrmath.dir
