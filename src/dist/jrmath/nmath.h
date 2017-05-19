@@ -21,6 +21,8 @@
 /* These may not be adequate everywhere. Convex had _ prepending common
    blocks, and some compilers may need to specify Fortran linkage */
 
+#ifndef NMATH_H
+#define NMATH_H
 
 
 /* Remap for JAGS */
@@ -84,7 +86,9 @@ double	bnc_gamma_cody(double);
 #define MATHLIB_WARNING4(fmt,x,x2,x3,x4) printf(fmt,x,x2,x3,x4)
 #define MATHLIB_WARNING5(fmt,x,x2,x3,x4,x5) printf(fmt,x,x2,x3,x4,x5)
 
+#ifndef ISNAN
 #define ISNAN(x) (isnan(x)!=0)
+#endif
 #define R_FINITE(x)    JR_finite(x)
 int JR_finite(double);
 
@@ -193,3 +197,5 @@ void attribute_hidden bratio(double a, double b, double x, double y,
 
 
 #endif /* MATHLIB_PRIVATE_H */
+
+#endif /* NMATH_H */

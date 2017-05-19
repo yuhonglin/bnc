@@ -30,8 +30,8 @@
    It is part of the API and supports 'standalone Rmath'.
 
 */
-#ifndef RMATH_H
-#define RMATH_H
+#ifndef JRMATH_H
+#define JRMATH_H
 
 /* Note that on some systems we need to include math.h before the
    defines below. */
@@ -611,7 +611,6 @@ extern int N01_kind;
 }
 #endif
 
-#include "callbacks.hh"
 #include "rbeta.hh"
 #include "rbinom.hh"
 #include "rcauchy.hh"
