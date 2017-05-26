@@ -611,24 +611,4 @@ extern int N01_kind;
 }
 #endif
 
-#include "rbeta.hh"
-#include "rbinom.hh"
-#include "rcauchy.hh"
-#include "rchisq.hh"
-#include "rexp.hh"
-#include "rf.hh"
-#include "rgamma.hh"
-#include "rgeom.hh"
-#include "rhyper.hh"
-#include "rlnorm.hh"
-#include "rlogis.hh"
-#include "rnbinom.hh"
-#include "rnchisq.hh"
-#include "rnorm.hh"
-#include "rpois.hh"
-#include "rt.hh"
-#include "runif.hh"
-#include "rweibull.hh"
-#include "rweibull2.hh"
-
 #endif /* RMATH_H */

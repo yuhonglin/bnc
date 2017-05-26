@@ -333,5 +333,6 @@ namespace bnc {
         
 } //namespace bnc
 
+#undef repeat
 
 #endif /* RMATH_RNG_H_ */
