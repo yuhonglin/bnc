@@ -1,11 +1,6 @@
 #ifndef BINOM_H
 #define BINOM_H
 
-#include <type_traits>
-#include <limits>
-#include <cmath>
-#include <cfloat>
-
 #include <dist/jrutil.hh>
 
 namespace bnc {
@@ -29,26 +24,17 @@ namespace bnc {
 	int i, ix, k, n;
 
 	if (!R_FINITE(nin))
-	{
-	    LOG_ERROR("invalid input, return NaN");
-	    return numeric_limits<double>::quiet_NaN();
-	}
-
+	    ML_ERR_return_NAN;
+	
 	r = R_forceint(nin);
 	if (r != nin)
-	{
-	    LOG_ERROR("invalid input, return NaN");
-	    return numeric_limits<double>::quiet_NaN();
-	}
+	    ML_ERR_return_NAN;
 
 	if (!R_FINITE(pp) ||
 	    /* n=0, p=0, p=1 are not errors <TSL>*/
 	    r < 0 || pp < 0. || pp > 1.)
-	{
-	    LOG_ERROR("invalid input, return NaN");
-	    return numeric_limits<double>::quiet_NaN();
-	}
-
+	    ML_ERR_return_NAN;
+	    
 	if (r == 0 || pp == 0.) return 0;
 	if (pp == 1.) return r;
 

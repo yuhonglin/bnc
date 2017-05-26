@@ -1,11 +1,6 @@
 #ifndef GAMMA_H
 #define GAMMA_H
 
-#include <type_traits>
-#include <limits>
-#include <cmath>
-#include <cfloat>
-
 #include <dist/jrutil.hh>
 
 namespace bnc {
@@ -48,8 +43,7 @@ namespace bnc {
 
 	if (!isfinite(a) || !isfinite(scale) || a < 0.0 || scale <= 0.0) {
 	    if(scale == 0.) return 0.;
-	    LOG_ERROR("invalid input, return NaN");
-	    return numeric_limits<double>::quiet_NaN();
+	    ML_ERR_return_NAN;
 	}
 
 	if (a < 1.) { /* GS algorithm for parameters a < 1 */

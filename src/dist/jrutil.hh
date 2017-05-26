@@ -1,14 +1,22 @@
 #ifndef JRUTIL_H
 #define JRUTIL_H
 
+#include <type_traits>
+#include <limits>
+#include <cmath>
+#include <cfloat>
+
 #include <util/logger.hh>
 #include <common/math.hh>
+#include <dist/jrconst.hh>
 
 namespace bnc {
     
 #define ML_POSINF	numeric_limits<double>::infinity()
 #define ML_NEGINF	-numeric_limits<double>::infinity()
 #define ML_NAN		numeric_limits<double>::quiet_NaN()
+#define ML_ERR_return_NAN { LOG_WARNING("return NaN"); return ML_NAN; }
+    
 
     template <class RNGType>
     inline double unif_rand(RNGType *rng)
@@ -151,7 +159,6 @@ namespace bnc {
 	return ret;							\
     }									\
 
-    
 }  // namespace bnc
 
 #endif /* JRUTIL_H */

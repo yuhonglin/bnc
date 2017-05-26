@@ -1,11 +1,6 @@
 #ifndef UNIF_H
 #define UNIF_H
 
-#include <type_traits>
-#include <limits>
-#include <cmath>
-#include <cfloat>
-
 #include <dist/jrutil.hh>
 
 namespace bnc {
@@ -16,10 +11,7 @@ namespace bnc {
     double runif(const double& a, const double& b, RNGType *rng)
     {
 	if (!isfinite(a) || !isfinite(b) || b < a)
-	{
-	    LOG_ERROR("invalid input, return NaN");
-	    return numeric_limits<double>::quiet_NaN();
-	}
+	    ML_ERR_return_NAN;
 
 	if (a == b)
 	    return a;

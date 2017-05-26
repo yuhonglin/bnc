@@ -18,6 +18,23 @@ namespace bnc {
 	return (x < y) ? y : x;
     }
 
+    inline int imin2(const int &x, const int &y)
+    {
+	return (x < y) ? x : y;
+    }
+
+    inline int imax2(const int &x, const int &y)
+    {
+	return (x < y) ? y : x;
+    }
+
+    inline double fsign(const double &x, const double &y)
+    {
+	if (isnan(x) || isnan(y))
+	    return x + y;
+	return ((y >= 0) ? fabs(x) : -fabs(x));
+    }
+
 }
 
 #endif /* MATH_H */

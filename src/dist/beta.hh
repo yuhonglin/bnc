@@ -1,11 +1,6 @@
 #ifndef BETA_H
 #define BETA_H
 
-#include <type_traits>
-#include <limits>
-#include <cmath>
-#include <cfloat>
-
 #include <dist/jrutil.hh>
 
 namespace bnc {
@@ -17,10 +12,7 @@ namespace bnc {
     double rbeta(const double &aa, const double &bb, RNGType *rng)
     {
 	if (aa < 0. || bb < 0.)
-	{
-	    LOG_ERROR("invalid input, return NaN");
-	    return numeric_limits<double>::quiet_NaN();
-	}
+	    ML_ERR_return_NAN;
 	if (!R_FINITE(aa) && !R_FINITE(bb)) // a = b = Inf : all mass at 1/2
 	    return 0.5;
 	if (aa == 0. && bb == 0.) // point mass 1/2 at each of {0,1} :

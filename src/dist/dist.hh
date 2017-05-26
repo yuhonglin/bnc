@@ -7,6 +7,7 @@
 #include "gamma.hh"
 #include "beta.hh"
 #include "binom.hh"
+#include "pois.hh"
 
 namespace bnc {
     
