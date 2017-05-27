@@ -17,6 +17,7 @@ namespace bnc {
 #define ML_NAN		numeric_limits<double>::quiet_NaN()
 #define ML_ERR_return_NAN { LOG_WARNING("return NaN"); return ML_NAN; }
     
+typedef enum { FALSE = 0, TRUE } Rboolean;    
 
     template <class RNGType>
     inline double unif_rand(RNGType *rng)
@@ -158,6 +159,158 @@ namespace bnc {
 	}								\
 	return ret;							\
     }									\
+
+
+#define R_RFUNC_INTERFACE_1ARG(FUNC)					\
+    template<class RNGType>						\
+    Vector FUNC(const int&n, const double& a,				\
+		 RNGType *rng)						\
+    {									\
+        Vector ret(n);							\
+									\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(a, rng);					\
+	}								\
+	return ret;							\
+									\
+    }									\
+									\
+    template<class RNGType, class AType>				\
+    Vector FUNC(const int&n, const AType& a,				\
+		RNGType *rng)						\
+    {									\
+        Vector ret(n);							\
+	int ai=0;							\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(*(a.data()+ai),				\
+		       rng);						\
+	    if (++ai >= a.size()) ai = 0;				\
+	}								\
+	return ret;							\
+    }									\
+
+
+#define R_RFUNC_INTERFACE_3ARG(FUNC)					\
+    template<class RNGType>						\
+    Vector FUNC(const int&n, const double& a, const double& b,		\
+		const double& c, RNGType *rng)				\
+    {									\
+        Vector ret(n);							\
+									\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(a, b, c, rng);				\
+	}								\
+	return ret;							\
+									\
+    }									\
+									\
+    template<class RNGType, class AType, class BType, class CType>	\
+    Vector FUNC(const int&n, const AType& a, const BType& b,		\
+		const CType &c, RNGType *rng)				\
+    {									\
+        Vector ret(n);							\
+	int ai=0, bi=0, ci=0;						\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(*(a.data()+ai), *(b.data()+bi),		\
+			  *(c.data()+ci), rng);				\
+	    if (++ai >= a.size()) ai = 0;				\
+	    if (++bi >= b.size()) bi = 0;				\
+	    if (++ci >= c.size()) ci = 0;				\
+	}								\
+	return ret;							\
+    }									\
+									\
+    template<class RNGType, class BType, class CType>			\
+    Vector FUNC(const int&n, const double& a, const BType& b,		\
+		const CType &c, RNGType *rng)				\
+    {									\
+        Vector ret(n);							\
+	int ai=0, bi=0, ci=0;						\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(a, *(b.data()+bi),				\
+			  *(c.data()+ci), rng);				\
+	    if (++bi >= b.size()) bi = 0;				\
+	    if (++ci >= c.size()) ci = 0;				\
+	}								\
+	return ret;							\
+    }									\
+									\
+    template<class RNGType, class AType, class CType>			\
+    Vector FUNC(const int &n, const AType &a, const double &b,		\
+		const CType &c, RNGType *rng)				\
+    {									\
+        Vector ret(n);							\
+	int ai=0, ci=0;							\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(*(a.data()+ai), b,				\
+			  *(c.data()+ci), rng);				\
+	    if (++ai >= a.size()) ai = 0;				\
+	    if (++ci >= c.size()) ci = 0;				\
+	}								\
+	return ret;							\
+    }									\
+									\
+    template<class RNGType, class AType, class BType>			\
+    Vector FUNC(const int&n, const AType& a, const BType& b,		\
+		const double &c, RNGType *rng)				\
+    {									\
+        Vector ret(n);							\
+	int ai=0, bi=0;							\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(*(a.data()+ai), *(b.data()+bi),		\
+			  c, rng);					\
+	    if (++ai >= a.size()) ai = 0;				\
+	    if (++bi >= b.size()) bi = 0;				\
+	}								\
+	return ret;							\
+    }									\
+									\
+    template<class RNGType, class AType>				\
+    Vector FUNC(const int&n, const AType &a, const double &b,		\
+		const double &c, RNGType *rng)				\
+    {									\
+        Vector ret(n);							\
+	int ai=0;							\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(*(a.data()+ai), b,				\
+			  c, rng);					\
+	    if (++ai >= a.size()) ai = 0;				\
+	}								\
+	return ret;							\
+    }									\
+									\
+    template<class RNGType, class BType>				\
+    Vector FUNC(const int&n, const double &a, const BType &b,		\
+		const double &c, RNGType *rng)				\
+    {									\
+        Vector ret(n);							\
+	int bi=0;							\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(a, *(b.data()+bi),				\
+			  c, rng);					\
+	    if (++bi >= b.size()) bi = 0;				\
+	}								\
+	return ret;							\
+    }									\
+									\
+    template<class RNGType, class CType>				\
+    Vector FUNC(const int&n, const double& a, const double& b,		\
+		const CType &c, RNGType *rng)				\
+    {									\
+        Vector ret(n);							\
+	int ci=0;							\
+	for (int i=0; i<n; i++) {					\
+	    ret(i) = FUNC(a, b,						\
+			  *(c.data()+ci), rng);				\
+	    if (++ci >= c.size()) ci = 0;				\
+	}								\
+	return ret;							\
+    }									\
+									\
+
+
+
+
 
 }  // namespace bnc
 

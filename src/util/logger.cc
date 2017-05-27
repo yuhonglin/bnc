@@ -77,7 +77,7 @@ namespace bnc {
     {
       if (level > _logLevel) return;
 
-      char prefix[4] = "---";
+      char prefix[4] = "  :";
       switch (level) {
       case LL_FATAL:   prefix[1] = '*'; break;
       case LL_ERROR:   prefix[1] = 'E'; break;

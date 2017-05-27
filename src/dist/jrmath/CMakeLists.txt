@@ -2,7 +2,6 @@ include_directories(${PROJECT_SOURCE_DIR}/../ ${PROJECT_SOURCE_DIR} ${PROJECT_SO
 
 file(GLOB jrmath_src
   "${CMAKE_CURRENT_LIST_DIR}/*.h"
-  "${CMAKE_CURRENT_LIST_DIR}/*.hh"
   "${CMAKE_CURRENT_LIST_DIR}/*.cc")
 
 add_definitions(-DMATHLIB_STANDALONE)

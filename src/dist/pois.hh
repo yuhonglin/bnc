@@ -212,6 +212,10 @@ namespace bnc {
 	return pois;
     }
 
+    R_RFUNC_INTERFACE_1ARG(rpois);
+
+
+    
 #undef a0
 #undef a1
 #undef a2
