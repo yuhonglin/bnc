@@ -15,6 +15,7 @@
 
 namespace bnc {
     enum SCALE { NORMAL=0, LOG=1 };
+    enum TAIL { UPTAIL=0, LOWTAIL=1 };
 }  // namespace bnc
 
 

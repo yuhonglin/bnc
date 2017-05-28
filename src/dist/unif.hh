@@ -3,6 +3,12 @@
 
 #include <dist/jrutil.hh>
 
+extern "C" {
+    double bnc_dunif(double x, double a, double b, int give_log);
+    double bnc_punif(double x, double a, double b, int lower_tail, int log_p);
+    double bnc_qunif(double p, double a, double b, int lower_tail, int log_p);
+}
+
 namespace bnc {
 
     /* R functions */
@@ -26,6 +32,22 @@ namespace bnc {
 
     // Imitate R's rnorm function
     R_RFUNC_INTERFACE_2ARG(runif);
+
+    /*
+     *  D functions 
+     */
+    R_DFUNC_INTERFACE_4ARG(dunif, bnc_dunif);
+
+    /* 
+     *  P functions
+     */
+    R_PFUNC_INTERFACE_5ARG(punif, bnc_punif);
+
+    /* 
+     *  Q functions
+     */
+    R_QFUNC_INTERFACE_5ARG(qunif, bnc_qunif);
+    
 
 }  // namespace bnc
 
