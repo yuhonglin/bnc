@@ -2,11 +2,17 @@
 #define NORM_H
 
 #include <dist/jrutil.hh>
+#include <dist/dist.hh>
+
+extern "C" {
+    double bnc_dnorm4(double x, double mu, double sigma, int give_log);
+}
 
 namespace bnc {
 
-    /* R functions */
-    
+    /*
+     *   R functions 
+     */
     template<class RNGType>
     double rnorm(const double mu, const double sigma, RNGType *rng)
     {
@@ -21,6 +27,12 @@ namespace bnc {
     
     // Imitate R's rnorm function
     R_RFUNC_INTERFACE_2ARG(rnorm);
+
+    /*
+     *  D functions 
+     */
+    R_DFUNC_INTERFACE_4ARG(dnorm, bnc_dnorm4);
+    
 
 }  // namespace bnc
 

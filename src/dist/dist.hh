@@ -13,7 +13,7 @@
 #include "dist/cauchy.hh"
 
 namespace bnc {
-    
+    enum SCALE { NORMAL=0, LOG=1 };
 }  // namespace bnc
 
 

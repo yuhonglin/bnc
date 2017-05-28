@@ -126,7 +126,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
         Vector ret(n);							\
 	int ai=0, bi=0;							\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(*(a.data()+ai), *(b.data()+bi),		\
+	    ret(i) = FUNC(a(ai), b(bi),					\
 		       rng);						\
 	    if (++ai >= a.size()) ai = 0;				\
 	    if (++bi >= b.size()) bi = 0;				\
@@ -141,7 +141,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 	Vector ret(n);							\
 	int bi=0;							\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(a, *(b.data()+bi), rng);			\
+	    ret(i) = FUNC(a, b(bi), rng);				\
 	    if (++bi >= b.size()) bi = 0;				\
 	}								\
 	return ret;							\
@@ -154,7 +154,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 	Vector ret(n);							\
 	int ai=0;							\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(*(a.data()+ai), b, rng);			\
+	    ret(i) = FUNC(a(ai), b, rng);				\
 	    if (++ai >= a.size()) ai = 0;				\
 	}								\
 	return ret;							\
@@ -182,7 +182,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
         Vector ret(n);							\
 	int ai=0;							\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(*(a.data()+ai),				\
+	    ret(i) = FUNC(a(ai),					\
 		       rng);						\
 	    if (++ai >= a.size()) ai = 0;				\
 	}								\
@@ -211,8 +211,8 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
         Vector ret(n);							\
 	int ai=0, bi=0, ci=0;						\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(*(a.data()+ai), *(b.data()+bi),		\
-			  *(c.data()+ci), rng);				\
+	    ret(i) = FUNC(a(ai), b(bi),					\
+			  c(ci), rng);					\
 	    if (++ai >= a.size()) ai = 0;				\
 	    if (++bi >= b.size()) bi = 0;				\
 	    if (++ci >= c.size()) ci = 0;				\
@@ -227,8 +227,8 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
         Vector ret(n);							\
 	int ai=0, bi=0, ci=0;						\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(a, *(b.data()+bi),				\
-			  *(c.data()+ci), rng);				\
+	    ret(i) = FUNC(a, b(bi),					\
+			  c(ci), rng);					\
 	    if (++bi >= b.size()) bi = 0;				\
 	    if (++ci >= c.size()) ci = 0;				\
 	}								\
@@ -242,8 +242,8 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
         Vector ret(n);							\
 	int ai=0, ci=0;							\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(*(a.data()+ai), b,				\
-			  *(c.data()+ci), rng);				\
+	    ret(i) = FUNC(a(ai), b,					\
+			  c(ci), rng);					\
 	    if (++ai >= a.size()) ai = 0;				\
 	    if (++ci >= c.size()) ci = 0;				\
 	}								\
@@ -257,7 +257,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
         Vector ret(n);							\
 	int ai=0, bi=0;							\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(*(a.data()+ai), *(b.data()+bi),		\
+	    ret(i) = FUNC(a(ai), b(bi),					\
 			  c, rng);					\
 	    if (++ai >= a.size()) ai = 0;				\
 	    if (++bi >= b.size()) bi = 0;				\
@@ -272,7 +272,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
         Vector ret(n);							\
 	int ai=0;							\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(*(a.data()+ai), b,				\
+	    ret(i) = FUNC(a(ai), b,					\
 			  c, rng);					\
 	    if (++ai >= a.size()) ai = 0;				\
 	}								\
@@ -286,7 +286,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
         Vector ret(n);							\
 	int bi=0;							\
 	for (int i=0; i<n; i++) {					\
-	    ret(i) = FUNC(a, *(b.data()+bi),				\
+	    ret(i) = FUNC(a, b(bi),					\
 			  c, rng);					\
 	    if (++bi >= b.size()) bi = 0;				\
 	}								\
@@ -301,17 +301,158 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 	int ci=0;							\
 	for (int i=0; i<n; i++) {					\
 	    ret(i) = FUNC(a, b,						\
-			  *(c.data()+ci), rng);				\
+			  c(ci), rng);					\
 	    if (++ci >= c.size()) ci = 0;				\
 	}								\
 	return ret;							\
     }									\
 									\
 
+    // Get first value of a scalar or vector/matrix class safely
+    template<typename T>
+    typename enable_if<is_scalar<T>::value,T>::type& first(T &x) {
+	return x;
+    }
+    template<typename T>
+    typename enable_if<is_class<T>::value,T>::type::Scalar& first(T& x) {
+	return x(0);
+    }
+
+    // Get nth value of a scalar or vector/matrix class safely
+    template<typename T>
+    typename enable_if<is_scalar<T>::value,T>::type& nth(T &x,
+							 const int &n) {
+	return x;
+    }
+    template<typename T>
+    typename enable_if<is_class<T>::value,T>::type::Scalar& nth(T& x,
+								const int &n) {
+	return x(n);
+    }
+
+    // Check if length is beyond array's length
+    template<typename T>
+    bool isOut(T &x, const typename enable_if<is_scalar<T>::value,int>::type &n) {
+	return false;
+    }
+    template<typename T>
+    bool isOut(T& x, const typename enable_if<is_class<T>::value,int>::type &n) {
+	return n>=x.size();
+    }
+
+    // Check if a matrix is dynamic
+    template<class T>
+    struct matrix_is_dynamic {
+	static const bool value = false;
+    };
+
+    template<class D>
+    struct matrix_is_dynamic<Eigen::Matrix<D, Eigen::Dynamic, Eigen::Dynamic>> {
+	static const bool value = true;
+    };
+
+    template<class D, int M>
+    struct matrix_is_dynamic<Eigen::Matrix<D, M, Eigen::Dynamic>> {
+	static const bool value = true;
+    };
+
+    template<class D, int N>
+    struct matrix_is_dynamic<Eigen::Matrix<D, Eigen::Dynamic, N>> {
+	static const bool value = true;
+    };
+
+    // Duplicate a matrix without copy values
+    // TODO: may need to add Tensor support
+    template<class D>
+    Eigen::Matrix<D,Eigen::Dynamic,Eigen::Dynamic>
+    clone_no_copy(const Eigen::Matrix<D,Eigen::Dynamic,Eigen::Dynamic>& x) {
+	return Eigen::Matrix<D,Eigen::Dynamic,Eigen::Dynamic>(x.rows(),x.cols());
+    }
+
+    template<class D, int M>
+    Eigen::Matrix<D,M,Eigen::Dynamic>
+    clone_no_copy(const Eigen::Matrix<D,M,Eigen::Dynamic>& x) {
+	return Eigen::Matrix<D,M,Eigen::Dynamic>(x.cols());
+    }
+
+    template<class D, int M>
+    Eigen::Matrix<D,Eigen::Dynamic,M>
+    clone_no_copy(const Eigen::Matrix<D,Eigen::Dynamic,M>& x) {
+	return Eigen::Matrix<D,Eigen::Dynamic,M>(x.rows());
+    }
+    
+    
+#define R_DFUNC_INTERFACE_4ARG(TF, JRFUNC)	      	        \
+    template<class X, class M, class S, class L>		\
+    typename enable_if<is_scalar<X>::value,X>::type		\
+    TF(const X &x, const M &mu,					\
+       const S &sigma, const L &give_log)			\
+    {								\
+	    double ret;						\
+	    ret = JRFUNC(x, first(mu), first(sigma),		\
+			 static_cast<int>(first(give_log)));	\
+	    return ret;						\
+    }								\
+								\
+    template<class X, class M, class S, class L>		\
+    typename enable_if<!is_scalar<X>::value,X>::type		\
+    TF(const X &x, const M &mu,					\
+       const S &sigma, const L &give_log)			\
+    {								\
+	auto ret = dup_no_copy(x);				\
+	int i1=0,i2=0,i3=0;					\
+	for (int i=0; i<x.size(); i++)				\
+	{							\
+	    ret(i) = JRFUNC(nth(x,i), nth(mu,i1),		\
+			    nth(sigma,i2),			\
+			    nth(give_log,i3));			\
+	    if (isOut(mu,++i1)) i1=0;				\
+	    if (isOut(sigma,++i2)) i2=0;			\
+	    if (isOut(give_log,i3++)) i3=0;			\
+	}							\
+	return ret;						\
+    }								\
 
 
+
+#define R_PFUNC_INTERFACE_5ARG(TF, JRFUNC)	      	        \
+    template<class X, class M, class S, class T, class L>	\
+    typename enable_if<is_scalar<X>::value,X>::type		\
+    TF(const X &x, const M &mu,					\
+	 const S &sigma, const T& lower_tail,			\
+	 const L &give_log)					\
+    {								\
+	X ret;							\
+	ret = JRFUNC(x, first(mu), first(sigma),		\
+		     static_cast<int>(first(give_log)));	\
+    }								\
+								\
+    template<class X, class M, class S, class T, class L>	\
+    typename enable_if<!is_scalar<X>::value,X>::type		\
+    TF(const X &x, const M &mu,					\
+	 const S &sigma, const T& lower_tail,			\
+	 const L &give_log)					\
+    {								\
+	X ret = dup_no_copy(x);					\
+	int i1=0,i2=0,i3=0;					\
+	for (int i=0; i<x.size(); i++)				\
+	{							\
+	    ret(i) = JRFUNC(nth(x,i),				\
+			    nth(mu,i1),				\
+			    nth(sigma,i2),			\
+			    nth(give_log,i3));			\
+	    if (isOut(mu,++i1)) i1=0;				\
+	    if (isOut(sigma,++i2)) i2=0;			\
+	    if (isOut(give_log,i3++)) i3=0;			\
+	}							\
+    }								\
+
+
+
+//(double x, double mu, double sigma, int lower_tail, int log_p)
 
 
 }  // namespace bnc
+
 
 #endif /* JRUTIL_H */
