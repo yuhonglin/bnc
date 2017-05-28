@@ -1,7 +1,13 @@
 #ifndef EXP_H
 #define EXP_H
 
-#include <dist/exp.hh>
+#include <dist/jrutil.hh>
+
+extern "C" {
+    double bnc_dexp(double x, double scale, int give_log);
+    double bnc_pexp(double x, double scale, int lower_tail, int log_p);
+    double bnc_qexp(double p, double scale, int lower_tail, int log_p);
+}
 
 namespace bnc {
     
@@ -21,7 +27,15 @@ namespace bnc {
     R_RFUNC_INTERFACE_1ARG(rexp);
 
     /* D functions */
+    R_DFUNC_INTERFACE_3ARG(dexp, bnc_dexp);
 
+    /* P functions */
+    R_PFUNC_INTERFACE_4ARG(pexp, bnc_pexp);
+
+    /* Q functions */
+    R_QFUNC_INTERFACE_4ARG(qexp, bnc_qexp);
+    
+    
 }  // namespace bnc
 
 #endif /* EXP_H */

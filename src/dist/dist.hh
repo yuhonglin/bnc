@@ -11,6 +11,7 @@
 #include "dist/geom.hh"
 #include "dist/hyper.hh"
 #include "dist/cauchy.hh"
+#include "dist/exp.hh"
 
 namespace bnc {
     enum SCALE { NORMAL=0, LOG=1 };

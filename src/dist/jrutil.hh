@@ -380,7 +380,36 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     clone_no_copy(const Eigen::Matrix<D,Eigen::Dynamic,M>& x) {
 	return Eigen::Matrix<D,Eigen::Dynamic,M>(x.rows());
     }
+
     
+#define R_DFUNC_INTERFACE_3ARG(TF, JRFUNC)	      	        \
+    template<class X, class M, class L>				\
+    typename enable_if<is_scalar<X>::value,X>::type		\
+    TF(const X &x, const M &mu,					\
+       const L &give_log)					\
+    {								\
+	    double ret;						\
+	    ret = JRFUNC(x, first(mu),				\
+			 static_cast<int>(first(give_log)));	\
+	    return ret;						\
+    }								\
+								\
+    template<class X, class M, class L>				\
+    typename enable_if<!is_scalar<X>::value,X>::type		\
+    TF(const X &x, const M &mu,	const L &give_log)		\
+    {								\
+	auto ret = dup_no_copy(x);				\
+	int i1=0,i3=0;						\
+	for (int i=0; i<x.size(); i++)				\
+	{							\
+	    ret(i) = JRFUNC(nth(x,i), nth(mu,i1),		\
+			    nth(give_log,i3));			\
+	    if (isOut(mu,++i1)) i1=0;				\
+	    if (isOut(give_log,i3++)) i3=0;			\
+	}							\
+	return ret;						\
+    }								\
+
     
 #define R_DFUNC_INTERFACE_4ARG(TF, JRFUNC)	      	        \
     template<class X, class M, class S, class L>		\
@@ -414,6 +443,41 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }								\
 
 
+#define R_PFUNC_INTERFACE_4ARG(TF, JRFUNC)				\
+    template<class X, class M, class T, class L>			\
+    typename enable_if<is_scalar<X>::value,X>::type			\
+    TF(const X &x, const M &mu,						\
+       const T& lower_tail,						\
+       const L &give_log)						\
+    {									\
+	X ret;								\
+	ret = JRFUNC(x, first(mu),					\
+		     static_cast<int>(first(lower_tail)),		\
+		     static_cast<int>(first(give_log)));		\
+	return ret;							\
+    }									\
+									\
+    template<class X, class M, class T, class L>			\
+    typename enable_if<!is_scalar<X>::value,X>::type			\
+    TF(const X &x, const M &mu,						\
+       const T& lower_tail,						\
+       const L &give_log)						\
+    {									\
+	X ret = dup_no_copy(x);						\
+	int i1=0,i3=0,i4=0;						\
+	for (int i=0; i<x.size(); i++)					\
+	{								\
+	    ret(i) = JRFUNC(nth(x,i),					\
+			    nth(mu,i1),					\
+			    static_cast<int>(nth(lower_tail,i3)),	\
+			    static_cast<int>(nth(give_log,i4)));	\
+	    if (isOut(mu,++i1)) i1=0;					\
+	    if (isOut(lower_tail,i3++)) i3=0;				\
+	    if (isOut(give_log,i4++)) i4=0;				\
+	}								\
+	return ret;							\
+    }									\
+
 
 #define R_PFUNC_INTERFACE_5ARG(TF, JRFUNC)				\
     template<class X, class M, class S, class T, class L>		\
@@ -446,6 +510,41 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 			    static_cast<int>(nth(give_log,i4)));	\
 	    if (isOut(mu,++i1)) i1=0;					\
 	    if (isOut(sigma,++i2)) i2=0;				\
+	    if (isOut(lower_tail,i3++)) i3=0;				\
+	    if (isOut(give_log,i4++)) i4=0;				\
+	}								\
+	return ret;							\
+    }									\
+
+#define R_QFUNC_INTERFACE_4ARG(TF, JRFUNC)				\
+    template<class X, class M, class T, class L>			\
+    typename enable_if<is_scalar<X>::value,X>::type			\
+    TF(const X &x, const M &mu,						\
+       const T& lower_tail,						\
+       const L &give_log)						\
+    {									\
+	X ret;								\
+	ret = JRFUNC(x, first(mu),					\
+		     static_cast<int>(first(lower_tail)),		\
+		     static_cast<int>(first(give_log)));		\
+	return ret;							\
+    }									\
+									\
+    template<class X, class M, class T, class L>			\
+    typename enable_if<!is_scalar<X>::value,X>::type			\
+    TF(const X &x, const M &mu,						\
+       const T& lower_tail,						\
+       const L &give_log)						\
+    {									\
+	X ret = dup_no_copy(x);						\
+	int i1=0,i3=0,i4=0;						\
+	for (int i=0; i<x.size(); i++)					\
+	{								\
+	    ret(i) = JRFUNC(nth(x,i),					\
+			    nth(mu,i1),					\
+			    static_cast<int>(nth(lower_tail,i3)),	\
+			    static_cast<int>(nth(give_log,i4)));	\
+	    if (isOut(mu,++i1)) i1=0;					\
 	    if (isOut(lower_tail,i3++)) i3=0;				\
 	    if (isOut(give_log,i4++)) i4=0;				\
 	}								\
@@ -489,10 +588,6 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 	}								\
 	return ret;							\
     }									\
-
-
-
-//(double x, double mu, double sigma, int lower_tail, int log_p)
 
 
 }  // namespace bnc
