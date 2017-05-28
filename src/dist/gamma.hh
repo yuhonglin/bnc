@@ -3,6 +3,12 @@
 
 #include <dist/jrutil.hh>
 
+extern "C" {
+    double bnc_dgamma(double x, double shape, double scale, int give_log);
+    double bnc_pgamma(double x, double alph, double scale, int lower_tail, int log_p);
+    double bnc_qgamma(double p, double alpha, double scale, int lower_tail, int log_p);
+}
+
 namespace bnc {
     /* R functions */
     
@@ -171,6 +177,21 @@ namespace bnc {
     // Imitate R's rnorm function
     R_RFUNC_INTERFACE_2ARG(rgamma);
 
+    /*
+     *  D functions 
+     */
+    R_DFUNC_INTERFACE_4ARG(dgamma, bnc_dgamma);
+
+    /* 
+     *  P functions
+     */
+    R_PFUNC_INTERFACE_5ARG(pgamma, bnc_pgamma);
+
+    /* 
+     *  Q functions
+     */
+    R_QFUNC_INTERFACE_5ARG(qgamma, bnc_qgamma);
+    
     
 }  // namespace bnc
 
