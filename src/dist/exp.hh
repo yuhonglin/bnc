@@ -4,6 +4,9 @@
 #include <dist/exp.hh>
 
 namespace bnc {
+    
+    /* R functions */
+    
     template<class RNGType>
     double rexp(double scale, RNGType *rng)
     {
@@ -16,6 +19,8 @@ namespace bnc {
     }
 
     R_RFUNC_INTERFACE_1ARG(rexp);
+
+    /* D functions */
 
 }  // namespace bnc
 
