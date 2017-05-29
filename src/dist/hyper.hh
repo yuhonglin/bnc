@@ -3,6 +3,14 @@
 
 #include <dist/jrutil.hh>
 
+extern "C" {
+    double bnc_dhyper(double x, double r, double b, double n, int give_log);
+    double bnc_phyper (double x, double NR, double NB, double n,
+		       int lower_tail, int log_p);
+    double bnc_qhyper(double p, double NR, double NB, double n,
+		      int lower_tail, int log_p);
+}
+
 namespace bnc {
     
     static double afc(int i)
@@ -299,6 +307,22 @@ namespace bnc {
 
     // imitate R interface
     R_RFUNC_INTERFACE_3ARG(rhyper);
+
+    /*
+     *  D functions 
+     */
+    R_DFUNC_INTERFACE_5ARG(dhyper, bnc_dhyper);
+
+    /* 
+     *  P functions
+     */
+    R_PFUNC_INTERFACE_6ARG(phyper, bnc_phyper);
+
+    /* 
+     *  Q functions
+     */
+    R_QFUNC_INTERFACE_6ARG(qhyper, bnc_qhyper);
+    
     
 }  // namespace bnc
 

@@ -467,11 +467,11 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 	{							\
 	    ret(i) = JRFUNC(nth(x,i), nth(mu,i1),		\
 			    nth(sigma,i2),			\
-			    nth(K,i3),				\
+			    nth(k,i3),				\
 			    nth(give_log,i4));			\
 	    if (isOut(mu,++i1)) i1=0;				\
 	    if (isOut(sigma,++i2)) i2=0;			\
-	    if (isOut(k,++i3)) i3=0;	       		        \	    
+	    if (isOut(k,++i3)) i3=0;	       		        \
             if (isOut(give_log,++i4)) i4=0;			\
 	}							\
 	return ret;						\
