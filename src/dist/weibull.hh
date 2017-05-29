@@ -1,7 +1,7 @@
 #ifndef WEIBULL_H
 #define WEIBULL_H
 
-#include <dist/jrmath.hh>
+#include <dist/jrutil.hh>
 
 extern "C" {
     double bnc_dweibull(double x, double shape,
