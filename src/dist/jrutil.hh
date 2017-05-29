@@ -120,7 +120,9 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class RNGType, class AType, class BType>			\
-    Vector FUNC(const int&n, const AType& a, const BType& b,		\
+    typename enable_if<is_class<AType>::value&&is_class<BType>::value,	\
+	      Vector>::type						\
+    FUNC(const int&n, const AType& a, const BType& b,			\
 		RNGType *rng)						\
     {									\
         Vector ret(n);							\
@@ -135,7 +137,8 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class RNGType, class BType>				\
-    Vector FUNC(const int&n, const double &a, const BType &b,		\
+    typename enable_if<is_class<BType>::value,Vector>::type		\
+    FUNC(const int&n, const double &a, const BType &b,			\
 		 RNGType *rng)						\
     {									\
 	Vector ret(n);							\
@@ -148,7 +151,8 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class RNGType, class AType>				\
-    Vector FUNC(const int&n, const AType &a, const double &b,		\
+    typename enable_if<is_class<AType>::value,Vector>::type		\
+    FUNC(const int&n, const AType &a, const double &b,			\
 		 RNGType *rng)						\
     {									\
 	Vector ret(n);							\

@@ -208,5 +208,19 @@ namespace bnc {
 
 }
 
+#undef N
+#undef M
+#undef MATRIX_A   /* constant vector a */
+#undef UPPER_MASK /* most significant w-r bits */
+#undef LOWER_MASK /* least significant r bits */
+
+/* Tempering parameters */
+#undef TEMPERING_MASK_B
+#undef TEMPERING_MASK_C
+#undef TEMPERING_SHIFT_U
+#undef TEMPERING_SHIFT_S
+#undef TEMPERING_SHIFT_T
+#undef TEMPERING_SHIFT_L
+
 
 #endif /* MERSENNE_TWISTER_RNG_H_ */
