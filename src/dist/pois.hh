@@ -3,6 +3,12 @@
 
 #include <dist/jrutil.hh>
 
+extern "C" {
+    double bnc_ppois(double x, double lambda, int lower_tail, int log_p);
+    double bnc_dpois(double x, double lambda, int give_log);
+    double bnc_qpois(double p, double lambda, int lower_tail, int log_p);
+}
+
 namespace bnc {
     
 #define a0	-0.5
@@ -211,10 +217,6 @@ namespace bnc {
 	}
 	return pois;
     }
-
-    R_RFUNC_INTERFACE_1ARG(rpois);
-
-
     
 #undef a0
 #undef a1
@@ -231,6 +233,17 @@ namespace bnc {
 
 #undef repeat
 
+    R_RFUNC_INTERFACE_1ARG(rpois);
+
+    /* D functions */
+    R_DFUNC_INTERFACE_3ARG(dpois, bnc_dpois);
+
+    /* P functions */
+    R_PFUNC_INTERFACE_4ARG(ppois, bnc_ppois);
+
+    /* Q functions */
+    R_QFUNC_INTERFACE_4ARG(qpois, bnc_qpois);
+    
     
 }  // namespace bnc
 
