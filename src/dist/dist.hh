@@ -19,6 +19,7 @@
 namespace bnc {
     enum SCALE { NORMAL=0, LOG=1 };
     enum TAIL { UPTAIL=0, LOWTAIL=1 };
+    enum DECOM { EIGEN_DECOM, CHOL_DECOM};
 }  // namespace bnc
 
 

@@ -5,6 +5,13 @@
 
 namespace bnc {
 
+    // matrix decomposition methods
+    enum MAT_DECOMP{
+	EIGEN_DECOMP,
+	CHOL_DECOMP
+    };
+
+    
     inline double fmin2(const double& x, const double& y) {
 	if (isnan(x) || isnan(y))
 	    return x + y;

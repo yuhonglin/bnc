@@ -11,31 +11,12 @@ Since the results of ```ddist``` and ```pdist``` are always scalars, so the resu
 returned value. For mutivariate distributions, the results of ```rnorm``` can be an array. To make
 all interface identical, we use the first argument as the return value.
 
+* Done
+  1. Scalar distributions implemented in rmath library.
 
 * Todo
-** Basic R distributions
-*** DONE Normal Distribution
-*** DONE Uniform Distribution
-*** DONE Gamma Distribution
-*** Beta Distribution
-*** Lognormal Distribution
-*** Chi-squared Distribution
-*** Non-central Chi-squared Distribution
-*** F Distibution
-*** Student t Distibution
-*** Binomial Distribution
-*** Multnomial Distribution
-*** Cauchy Distribution
-*** Exponential Distribution
-*** Geometric Distribution
-*** Hypergeometric Distibution
-*** Negative Binomial Distribution
-*** Poisson Distribution
-*** Weibull Distribution with shape-scale parameterization
-*** Weibull Distribution with shape-rate parameterization
-*** Logistic Distribution
-*** Non-central Beta Distribution
-*** Non-central F Distribution
-*** Non-central Student t Distribution
-*** Studentized Range Distribution
-*** Wilcoxon Rank Sum Distribution
+  1. Multivariate normal
+  2. Multivariate t Distribution
+  3. (inverse) Wishart
+  4. (Multivariate) Pareto distributions
+  5. Dirichlet Distribution
