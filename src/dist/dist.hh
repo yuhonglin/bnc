@@ -7,6 +7,7 @@
 #include "dist/gamma.hh"
 #include "dist/beta.hh"
 #include "dist/binom.hh"
+#include "dist/nbinom.hh"
 #include "dist/pois.hh"
 #include "dist/geom.hh"
 #include "dist/hyper.hh"
@@ -15,6 +16,8 @@
 #include "dist/f.hh"
 #include "dist/weibull.hh"
 #include "dist/weibull2.hh"
+#include "dist/t.hh"
+#include "dist/chisq.hh"
 
 namespace bnc {
     enum SCALE { NORMAL=0, LOG=1 };

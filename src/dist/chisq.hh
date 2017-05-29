@@ -1,7 +1,7 @@
 #ifndef CHISQ_H
 #define CHISQ_H
 
-#include <dist/distutil.hh>
+#include <dist/jrutil.hh>
 #include <dist/gamma.hh>
 
 namespace bnc {

@@ -1,7 +1,7 @@
 #ifndef NBINOM_H
 #define NBINOM_H
 
-#include <dist/jrmath.hh>
+#include <dist/jrutil.hh>
 
 extern "C" {
     double bnc_dnbinom(double x, double size, double prob,
@@ -9,7 +9,7 @@ extern "C" {
     double bnc_pnbinom(double x, double size, double prob,
 		       int lower_tail, int log_p);
     double bnc_qnbinom(double p, double size, double prob,
-		       int lower_tail, int log_p)
+		       int lower_tail, int log_p);
 }
 
 namespace bnc {
@@ -33,7 +33,7 @@ namespace bnc {
     }
 
     // Imitate R's rnorm function
-    R_RFUNC_INTERFACE_2ARG(rnorm);
+    R_RFUNC_INTERFACE_2ARG(rnbinom);
 
     /*
      *  D functions 
