@@ -3,6 +3,12 @@
 
 #include <dist/jrutil.hh>
 
+extern "C" {
+    double bnc_dbinom(double x, double n, double p, int give_log);
+    double bnc_pbinom(double x, double n, double p, int lower_tail, int log_p);
+    double bnc_qbinom(double p, double n, double pr, int lower_tail, int log_p);
+}
+
 namespace bnc {
 
     /* R functions */
@@ -177,6 +183,22 @@ namespace bnc {
 
     // Imitate R's rnorm function
     R_RFUNC_INTERFACE_2ARG(rbinom);
+
+    /*
+     *  D functions 
+     */
+    R_DFUNC_INTERFACE_4ARG(dbinom, bnc_dbinom);
+
+    /* 
+     *  P functions
+     */
+    R_PFUNC_INTERFACE_5ARG(pbinom, bnc_pbinom);
+
+    /* 
+     *  Q functions
+     */
+    R_QFUNC_INTERFACE_5ARG(qbinom, bnc_qbinom);
+
     
 }  // namespace bnc
 
