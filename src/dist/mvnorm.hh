@@ -127,7 +127,7 @@ namespace bnc {
 
 	if (s == LOG) {
 	    logden -= log(sigma.determinant())/2 +
-		mu.size()* 0.572364942924700087071713675677;
+		mu.size()*0.918938533204672741780329736406;
 	    return logden;
 	} else {
 	    return exp(logden)*
