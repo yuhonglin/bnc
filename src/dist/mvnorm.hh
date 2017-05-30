@@ -22,7 +22,7 @@ namespace bnc {
     // generate only 1 sample
     template<MVNORM_INPUT prec=VARIANCE,
 	     MAT_DECOMP MD=EIGEN_DECOMP, class RNGType>
-    Vector mvrnorm(const Vector& mu, const Matrix& sigma,
+    Vector rmvnorm(const Vector& mu, const Matrix& sigma,
 		   RNGType* rng)
     {
 	static_assert(MD==EIGEN_DECOMP || CHOL_DECOMP,
@@ -49,7 +49,7 @@ namespace bnc {
     // generate one sample but use eigen decomposition as input
     template<MVNORM_INPUT prec=VARIANCE,
 	     MAT_DECOMP MD=EIGEN_DECOMP, class RNGType>
-    Vector mvrnorm(const Vector& mu, const Eigen::EigenSolver<Matrix>& es,
+    Vector rmvnorm(const Vector& mu, const Eigen::EigenSolver<Matrix>& es,
 		   RNGType* rng)
     {
 	static_assert(MD==EIGEN_DECOMP || CHOL_DECOMP,
@@ -75,7 +75,7 @@ namespace bnc {
     // generate multiple samples
     template<MVNORM_INPUT prec=VARIANCE,
 	     MAT_DECOMP MD=EIGEN_DECOMP, class RNGType>
-    Matrix mvrnorm(const int& n, const Vector& mu,
+    Matrix rmvnorm(const int& n, const Vector& mu,
 		   const Matrix& sigma, RNGType* rng)
     {
 	static_assert(MD==EIGEN_DECOMP || CHOL_DECOMP,
@@ -85,7 +85,7 @@ namespace bnc {
 	Eigen::EigenSolver<Matrix> es(sigma);
 	
 	for (int i=0; i<n; i++) {
-	    ret.row(i) = mvrnorm<prec,MD,RNGType>(mu, es, rng);
+	    ret.row(i) = rmvnorm<prec,MD,RNGType>(mu, es, rng);
 	}
 
 	return ret;
@@ -96,7 +96,7 @@ namespace bnc {
 
     // for row vector
     template <int R, int C>
-    double mvdnorm(const Eigen::Matrix<double,R,C>& x,
+    double dmvnorm(const Eigen::Matrix<double,R,C>& x,
 		   const typename enable_if<R==1,Vector>::type& mu,
 		   const Matrix& sigma, const SCALE& s=NORMAL) {
 
@@ -117,7 +117,7 @@ namespace bnc {
 
     // for column vector
     template <int R, int C>
-    double mvdnorm(const Eigen::Matrix<double,R,C>& x,
+    double dmvnorm(const Eigen::Matrix<double,R,C>& x,
 		   const typename enable_if<C==1,Vector>::type& mu,
 		   const Matrix& sigma, const SCALE& s=NORMAL) {
 
