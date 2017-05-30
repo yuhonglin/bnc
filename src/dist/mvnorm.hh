@@ -10,6 +10,7 @@
 #include <common/math.hh>
 #include <matrix/matrix.hh>
 #include <dist/norm.hh>
+#include <dist/dist.hh>
 
 
 namespace bnc {
@@ -97,18 +98,43 @@ namespace bnc {
     template <int R, int C>
     double mvdnorm(const Eigen::Matrix<double,R,C>& x,
 		   const typename enable_if<R==1,Vector>::type& mu,
-		   const Matrix& sigma) {
-	TODO
-	return 0.0;
+		   const Matrix& sigma, const SCALE& s=NORMAL) {
+
+	auto diff = x.transpose() - mu;
+	double logden = -diff.transpose()*sigma.inverse()
+	    .dot(diff.transpose())/2;
+
+	if (s == LOG) {
+	    logden -= log(sigma.determinant())/2 +
+		mu.size()* 0.572364942924700087071713675677;
+	    return logden;
+	} else {
+	    return exp(logden)*
+		pow(0.398942280401432677939946059934,mu.size())/
+		sqrt(sigma.determinant());
+	}
     }
 
     // for column vector
     template <int R, int C>
     double mvdnorm(const Eigen::Matrix<double,R,C>& x,
 		   const typename enable_if<C==1,Vector>::type& mu,
-		   const Matrix& sigma) {
-	TODO
-	return 0.0;
+		   const Matrix& sigma, const SCALE& s=NORMAL) {
+
+	auto diff = x - mu;
+	double logden = -(diff.transpose()*sigma.inverse())
+	    .dot(diff.transpose())/2;
+
+	if (s == LOG) {
+	    logden -= log(sigma.determinant())/2 +
+		mu.size()* 0.572364942924700087071713675677;
+	    return logden;
+	} else {
+	    return exp(logden)*
+		pow(0.398942280401432677939946059934,mu.size())/
+		sqrt(sigma.determinant());
+	}
+	
     }
 
     
