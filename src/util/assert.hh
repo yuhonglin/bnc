@@ -16,9 +16,9 @@ namespace bnc {
     }
     
     template<typename T, typename... Args>
-    inline bool _assert_helper(T t, Args... args)
+    inline bool _assert_helper(const T& t, Args... args)
     {
-	if (t) return _assert_helper;
+	if (t) return _assert_helper(args...);
 	else return false;
     }
     
