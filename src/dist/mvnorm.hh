@@ -5,6 +5,8 @@
 #ifndef MVNORM_H
 #define MVNORM_H
 
+#include <limits>
+
 #include <Eigen/Eigenvalues>
 #include <util/logger.hh>
 #include <common/math.hh>
@@ -25,25 +27,53 @@ namespace bnc {
     Vector rmvnorm(const Vector& mu, const Matrix& sigma,
 		   RNGType* rng)
     {
-	static_assert(MD==EIGEN_DECOMP || CHOL_DECOMP,
-		      "Matrix factorisation method not supported");
+	if (MD==CHOL_DECOMP) {
+	    // use cholesky decomposition
+	    Vector ret = rnorm(mu.size(), 0., 1., rng);
+	    Matrix L = sigma.llt().matrixL();
+	    
+	    if (prec==PRECISION) {
+		// sigma is precision matrix
+		return L.triangularView<Eigen::Lower>().solve(ret) + mu;
+	    } else {
+		// sigma is covariance matrix
+		return L.triangularView<Eigen::Lower>()*ret + mu;
+	    }
+	}
 
-	if (MD!=EIGEN_DECOMP) {
-	    TODO
+	if (MD==RCHOL_DECOMP) {
+	    // use robest cholesky decomposition
+	    Vector ret = rnorm(mu.size(), 0., 1., rng);
+	    Matrix L = sigma.ldlt().matrixL();
+	    
+	    if (prec==PRECISION) {
+		// sigma is precision matrix
+		return L.triangularView<Eigen::Lower>().solve(ret) + mu;
+	    } else {
+		// sigma is covariance matrix
+		return L.triangularView<Eigen::Lower>()*ret + mu;
+	    }
 	}
-	
-	Eigen::EigenSolver<Matrix> es(sigma);
-	Vector ret;
-	if (prec==PRECISION) {
-	    // sigma is precision matrix
-	    ret = rnorm(mu.size(), 0., es.eigenvalues().real().
-			array().sqrt().inverse(), rng);
-	} else {
-	    // sigma is covariance matrix
-	    ret = rnorm(mu.size(), 0., es.eigenvalues().array().
-			real().sqrt(), rng);
+
+	if (MD==EIGEN_DECOMP) {
+	    // use eigen decomposition
+	    Eigen::EigenSolver<Matrix> es(sigma);
+	    Vector ret;
+	    if (prec==PRECISION) {
+		// sigma is precision matrix
+		ret = rnorm(mu.size(), 0., es.eigenvalues().real().
+			    array().sqrt().inverse(), rng);
+	    } else {
+		// sigma is covariance matrix
+		ret = rnorm(mu.size(), 0., es.eigenvalues().array().
+			    real().sqrt(), rng);
+	    }
+	    return es.eigenvectors().real()*ret + mu;
 	}
-	return es.eigenvectors().real()*ret + mu;
+
+	LOG_ERROR("Matrix decomposition method not supported, return NaN.");
+	return Vector::Constant(mu.size(),
+				std::numeric_limits<double>::quiet_NaN());
     }
 
     // generate one sample but use eigen decomposition as input
@@ -52,13 +82,6 @@ namespace bnc {
     Vector rmvnorm(const Vector& mu, const Eigen::EigenSolver<Matrix>& es,
 		   RNGType* rng)
     {
-	static_assert(MD==EIGEN_DECOMP || CHOL_DECOMP,
-		      "Matrix factorisation method not supported");
-
-	if (MD!=EIGEN_DECOMP) {
-	    TODO
-	}
-	
 	Vector ret;
 	if (prec==PRECISION) {
 	    // sigma is precision matrix

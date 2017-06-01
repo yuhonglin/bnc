@@ -7,8 +7,9 @@ namespace bnc {
 
     // matrix decomposition methods
     enum MAT_DECOMP{
-	EIGEN_DECOMP,
-	CHOL_DECOMP
+	EIGEN_DECOMP,    // eigen (spectral) decomposition
+	CHOL_DECOMP,     // Cholesky decomposition
+	RCHOL_DECOMP     // robust Cholesky decomposition
     };
 
     enum MAT_TYPE {
