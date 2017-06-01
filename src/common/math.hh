@@ -11,6 +11,10 @@ namespace bnc {
 	CHOL_DECOMP
     };
 
+    enum MAT_TYPE {
+	MAT_SPD,
+	MAT_PD
+    };
     
     inline double fmin2(const double& x, const double& y) {
 	if (isnan(x) || isnan(y))
