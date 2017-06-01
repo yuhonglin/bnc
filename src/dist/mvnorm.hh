@@ -28,7 +28,7 @@ namespace bnc {
 		   RNGType* rng)
     {
 	if (MD==CHOL_DECOMP) {
-	    // use cholesky decomposition
+	    // use cholesky decomposition (fastest, but only for PD sigma)
 	    Vector ret = rnorm(mu.size(), 0., 1., rng);
 	    Matrix L = sigma.llt().matrixL();
 	    

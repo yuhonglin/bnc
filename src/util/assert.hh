@@ -8,6 +8,9 @@ using namespace std;
 #include <util/logger.hh>
 
 namespace bnc {
+
+#ifndef FAST_MODE
+    // in safe mode, we check and check and check...
     template<typename T>
     inline bool _assert_helper(T t)
     {
@@ -23,12 +26,20 @@ namespace bnc {
     }
     
     template<typename... Args>
-    void assert(const string& info, Args... args) {
+    inline void assert(const string& info, Args... args) {
 	if(!_assert_helper(args...))
 	{
 	    LOG_ERROR(info);
 	}
     }
+#else
+    // in fast mode, do nothing
+    template<typename... Args>
+    inline void assert(const string& info, Args... args) {
+	return;
+    }
+#endif
+    
 
 }  // namespace bnc
 
