@@ -16,7 +16,7 @@ namespace bnc {
      *   R functions 
      */
     template<class RNGType>
-    double rnorm(const double mu, const double sigma, RNGType *rng)
+    double rnorm(const double& mu, const double& sigma, RNGType *rng)
     {
 	if (isnan(mu) || !isfinite(sigma) || sigma < 0.)
 	    ML_ERR_return_NAN;
