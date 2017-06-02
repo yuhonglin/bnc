@@ -57,18 +57,18 @@ namespace bnc {
 
 	if (MD==EIGEN_DECOMP) {
 	    // use eigen decomposition
-	    Eigen::EigenSolver<Matrix> es(sigma);
+	    Eigen::SelfAdjointEigenSolver<Matrix> es(sigma);
 	    Vector ret;
 	    if (prec==PRECISION) {
 		// sigma is precision matrix
-		ret = rnorm(mu.size(), 0., es.eigenvalues().real().
+		ret = rnorm(mu.size(), 0., es.eigenvalues().
 			    array().sqrt().inverse(), rng);
 	    } else {
 		// sigma is covariance matrix
 		ret = rnorm(mu.size(), 0., es.eigenvalues().array().
-			    real().sqrt(), rng);
+			    sqrt(), rng);
 	    }
-	    return es.eigenvectors().real()*ret + mu;
+	    return es.eigenvectors()*ret + mu;
 	}
 
 	LOG_ERROR("Matrix decomposition method not supported, return NaN.");
@@ -79,20 +79,20 @@ namespace bnc {
     // generate one sample but use eigen decomposition as input
     template<MVNORM_INPUT prec=VARIANCE,
 	     MAT_DECOMP MD=EIGEN_DECOMP, class RNGType>
-    Vector rmvnorm(const Vector& mu, const Eigen::EigenSolver<Matrix>& es,
+    Vector rmvnorm(const Vector& mu, const Eigen::SelfAdjointEigenSolver<Matrix>& es,
 		   RNGType* rng)
     {
 	Vector ret;
 	if (prec==PRECISION) {
 	    // sigma is precision matrix
-	    ret = rnorm(mu.size(), 0., es.eigenvalues().real().
+	    ret = rnorm(mu.size(), 0., es.eigenvalues().
 			array().sqrt().inverse(), rng);
 	} else {
 	    // sigma is covariance matrix
 	    ret = rnorm(mu.size(), 0., es.eigenvalues().array().
-			real().sqrt(), rng);
+			sqrt(), rng);
 	}
-	return es.eigenvectors().real()*ret + mu;
+	return es.eigenvectors()*ret + mu;
     }
 
     // generate multiple samples
@@ -105,7 +105,7 @@ namespace bnc {
 		      "Matrix factorisation method not supported");
 
 	Matrix ret(n, mu.size());
-	Eigen::EigenSolver<Matrix> es(sigma);
+	Eigen::SelfAdjointEigenSolver<Matrix> es(sigma);
 	
 	for (int i=0; i<n; i++) {
 	    ret.row(i) = rmvnorm<prec,MD,RNGType>(mu, es, rng);

@@ -16,6 +16,11 @@ namespace bnc {
 	MAT_SPD,
 	MAT_PD
     };
+
+    enum MAT_STRUCTURE {
+	UPPER_TRIANGLE,
+	LOWER_TRIANGLE
+    };
     
     inline double fmin2(const double& x, const double& y) {
 	if (isnan(x) || isnan(y))

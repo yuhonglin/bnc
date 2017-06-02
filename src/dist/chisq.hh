@@ -6,7 +6,7 @@
 
 namespace bnc {
     template<class RNGType>
-    double rchisq(const double &df, RNGType *rng)
+    double rchisq(const int &df, RNGType *rng)
     {
 	if (!R_FINITE(df) || df < 0.0) ML_ERR_return_NAN;
 
