@@ -32,7 +32,7 @@ namespace bnc {
      */
 #define LOG(L, M)							\
     if ((L) > Logger::getLogLevel()) { }				\
-    else { std::stringstream __s; if (L == LL_FATAL) { __s << "(" << __FILE__ << ", " << __LINE__ << ") "; } \
+    else { std::stringstream __s; if (true) { __s << "(" << __FILE__ << ":" << __LINE__ << ") "; } \
       __s << M; Logger::logMessage(L, __s.str()); }
     /** 
      * log micro that only logs once
