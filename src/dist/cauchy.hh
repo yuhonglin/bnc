@@ -1,13 +1,13 @@
 #ifndef CAUCHY_H
 #define CAUCHY_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_dcauchy(double x, double location, double scale, int give_log);
-    double bnc_pcauchy(double x, double location, double scale,
+    double br_dcauchy(double x, double location, double scale, int give_log);
+    double br_pcauchy(double x, double location, double scale,
 		       int lower_tail, int log_p);
-    double bnc_qcauchy(double p, double location, double scale,
+    double br_qcauchy(double p, double location, double scale,
 		       int lower_tail, int log_p);
 }
 
@@ -29,17 +29,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(dcauchy, bnc_dcauchy);
+    R_DFUNC_INTERFACE_4ARG(dcauchy, br_dcauchy);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(pcauchy, bnc_pcauchy);
+    R_PFUNC_INTERFACE_5ARG(pcauchy, br_pcauchy);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qcauchy, bnc_qcauchy);
+    R_QFUNC_INTERFACE_5ARG(qcauchy, br_qcauchy);
     
     
 }  // namespace bnc

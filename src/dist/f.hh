@@ -2,9 +2,9 @@
 #define F_H
 
 extern "C" {
-    double bnc_dF(double x, double m, double n, int give_log);
-    double bnc_pF(double x, double df1, double df2, int lower_tail, int log_p);
-    double bnc_qF(double p, double df1, double df2, int lower_tail, int log_p);
+    double br_dF(double x, double m, double n, int give_log);
+    double br_pF(double x, double df1, double df2, int lower_tail, int log_p);
+    double br_qF(double p, double df1, double df2, int lower_tail, int log_p);
 }
 
 namespace bnc {
@@ -28,17 +28,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(df, bnc_dF);
+    R_DFUNC_INTERFACE_4ARG(df, br_dF);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(pf, bnc_pF);
+    R_PFUNC_INTERFACE_5ARG(pf, br_pF);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qf, bnc_qF);
+    R_QFUNC_INTERFACE_5ARG(qf, br_qF);
     
 
 }  // namespace bnc

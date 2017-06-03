@@ -1,13 +1,13 @@
 #ifndef HYPER_H
 #define HYPER_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_dhyper(double x, double r, double b, double n, int give_log);
-    double bnc_phyper (double x, double NR, double NB, double n,
+    double br_dhyper(double x, double r, double b, double n, int give_log);
+    double br_phyper (double x, double NR, double NB, double n,
 		       int lower_tail, int log_p);
-    double bnc_qhyper(double p, double NR, double NB, double n,
+    double br_qhyper(double p, double NR, double NB, double n,
 		      int lower_tail, int log_p);
 }
 
@@ -311,17 +311,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_5ARG(dhyper, bnc_dhyper);
+    R_DFUNC_INTERFACE_5ARG(dhyper, br_dhyper);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_6ARG(phyper, bnc_phyper);
+    R_PFUNC_INTERFACE_6ARG(phyper, br_phyper);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_6ARG(qhyper, bnc_qhyper);
+    R_QFUNC_INTERFACE_6ARG(qhyper, br_qhyper);
     
     
 }  // namespace bnc

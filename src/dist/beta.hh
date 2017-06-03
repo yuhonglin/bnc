@@ -1,12 +1,12 @@
 #ifndef BETA_H
 #define BETA_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_dbeta(double x, double a, double b, int give_log);
-    double bnc_pbeta(double x, double a, double b, int lower_tail, int log_p);
-    double bnc_qbeta(double alpha, double p, double q, int lower_tail, int log_p);
+    double br_dbeta(double x, double a, double b, int give_log);
+    double br_pbeta(double x, double a, double b, int lower_tail, int log_p);
+    double br_qbeta(double alpha, double p, double q, int lower_tail, int log_p);
 }
 
 namespace bnc {
@@ -128,17 +128,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(dbeta, bnc_dbeta);
+    R_DFUNC_INTERFACE_4ARG(dbeta, br_dbeta);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(pbeta, bnc_pbeta);
+    R_PFUNC_INTERFACE_5ARG(pbeta, br_pbeta);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qbeta, bnc_qbeta);
+    R_QFUNC_INTERFACE_5ARG(qbeta, br_qbeta);
     
     
 }  // namespace bnc

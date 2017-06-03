@@ -1,14 +1,14 @@
 #ifndef NBINOM_H
 #define NBINOM_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_dnbinom(double x, double size, double prob,
+    double br_dnbinom(double x, double size, double prob,
 		       int give_log);
-    double bnc_pnbinom(double x, double size, double prob,
+    double br_pnbinom(double x, double size, double prob,
 		       int lower_tail, int log_p);
-    double bnc_qnbinom(double p, double size, double prob,
+    double br_qnbinom(double p, double size, double prob,
 		       int lower_tail, int log_p);
 }
 
@@ -38,17 +38,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(dnbinom, bnc_dnbinom);
+    R_DFUNC_INTERFACE_4ARG(dnbinom, br_dnbinom);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(pnbinom, bnc_pnbinom);
+    R_PFUNC_INTERFACE_5ARG(pnbinom, br_pnbinom);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qnbinom, bnc_qnbinom);
+    R_QFUNC_INTERFACE_5ARG(qnbinom, br_qnbinom);
 
 }  // namespace bnc
 

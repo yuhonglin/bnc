@@ -1,12 +1,12 @@
 #ifndef UNIF_H
 #define UNIF_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_dunif(double x, double a, double b, int give_log);
-    double bnc_punif(double x, double a, double b, int lower_tail, int log_p);
-    double bnc_qunif(double p, double a, double b, int lower_tail, int log_p);
+    double br_dunif(double x, double a, double b, int give_log);
+    double br_punif(double x, double a, double b, int lower_tail, int log_p);
+    double br_qunif(double p, double a, double b, int lower_tail, int log_p);
 }
 
 namespace bnc {
@@ -36,17 +36,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(dunif, bnc_dunif);
+    R_DFUNC_INTERFACE_4ARG(dunif, br_dunif);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(punif, bnc_punif);
+    R_PFUNC_INTERFACE_5ARG(punif, br_punif);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qunif, bnc_qunif);
+    R_QFUNC_INTERFACE_5ARG(qunif, br_qunif);
     
 
 }  // namespace bnc

@@ -1,12 +1,12 @@
 #ifndef POIS_H
 #define POIS_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_ppois(double x, double lambda, int lower_tail, int log_p);
-    double bnc_dpois(double x, double lambda, int give_log);
-    double bnc_qpois(double p, double lambda, int lower_tail, int log_p);
+    double br_ppois(double x, double lambda, int lower_tail, int log_p);
+    double br_dpois(double x, double lambda, int give_log);
+    double br_qpois(double p, double lambda, int lower_tail, int log_p);
 }
 
 namespace bnc {
@@ -236,13 +236,13 @@ namespace bnc {
     R_RFUNC_INTERFACE_1ARG(rpois);
 
     /* D functions */
-    R_DFUNC_INTERFACE_3ARG(dpois, bnc_dpois);
+    R_DFUNC_INTERFACE_3ARG(dpois, br_dpois);
 
     /* P functions */
-    R_PFUNC_INTERFACE_4ARG(ppois, bnc_ppois);
+    R_PFUNC_INTERFACE_4ARG(ppois, br_ppois);
 
     /* Q functions */
-    R_QFUNC_INTERFACE_4ARG(qpois, bnc_qpois);
+    R_QFUNC_INTERFACE_4ARG(qpois, br_qpois);
     
     
 }  // namespace bnc

@@ -1,14 +1,14 @@
 #ifndef WEIBULL2_H
 #define WEIBULL2_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_dweibull2(double x, double shape,
+    double br_dweibull2(double x, double shape,
 			double scale, int give_log);
-    double bnc_pweibull2(double x, double shape, double scale,
+    double br_pweibull2(double x, double shape, double scale,
 			int lower_tail, int log_p);
-    double bnc_qweibull2(double p, double shape, double scale,
+    double br_qweibull2(double p, double shape, double scale,
 			int lower_tail, int log_p);
 	
 }
@@ -35,17 +35,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(dweibull2, bnc_dweibull2);
+    R_DFUNC_INTERFACE_4ARG(dweibull2, br_dweibull2);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(pweibull2, bnc_pweibull2);
+    R_PFUNC_INTERFACE_5ARG(pweibull2, br_pweibull2);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qweibull2, bnc_qweibull2);
+    R_QFUNC_INTERFACE_5ARG(qweibull2, br_qweibull2);
 
 }  // namespace bnc
 

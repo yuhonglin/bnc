@@ -20,8 +20,8 @@
 #include <dist/mvnorm.hh>
 
 extern "C" {
-    double bnc_lgammafn(double);
-    double bnc_gammafn(double);
+    double br_lgammafn(double);
+    double br_gammafn(double);
 }
 
 namespace bnc {
@@ -88,11 +88,11 @@ namespace bnc {
     }
 
 
-    static double bnc_log_multigamma(double n, unsigned int p)
+    static double br_log_multigamma(double n, unsigned int p)
     {
 	double y =  (p * (p-1) * log(3.141592653589793238462643383280))/4;
 	for (unsigned int j = 0; j < p; ++j) {
-	    y += bnc_lgammafn((n-j)/2);
+	    y += br_lgammafn((n-j)/2);
 	}
 	return y;
     }
@@ -105,7 +105,7 @@ namespace bnc {
 	    // adapt from MCMCpack's dwish
 	    double gammapart = 1.;
 	    for (int i=0; i<x.rows(); i++) {
-		gammapart *= bnc_gammafn((df-i)/2.);
+		gammapart *= br_gammafn((df-i)/2.);
 	    }
 	    double denom = gammapart * pow(2.,df*x.rows()/2.) *
 		pow(3.141592653589793238462643383280, x.rows()*(x.rows()-1)/4.);
@@ -121,7 +121,7 @@ namespace bnc {
 	    // modified from MCMCpack's dwish
 	    double gammapart = 0.;
 	    for (int i=0; i<x.rows(); i++) {
-		gammapart += bnc_lgammafn((df-i)/2.);
+		gammapart += br_lgammafn((df-i)/2.);
 	    }
 	    double denom = gammapart + df*x.rows()/2.*log(2.) +
 		log(3.141592653589793238462643383280)/4.*x.rows()*(x.rows()-1);

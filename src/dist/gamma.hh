@@ -1,12 +1,12 @@
 #ifndef GAMMA_H
 #define GAMMA_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_dgamma(double x, double shape, double scale, int give_log);
-    double bnc_pgamma(double x, double alph, double scale, int lower_tail, int log_p);
-    double bnc_qgamma(double p, double alpha, double scale, int lower_tail, int log_p);
+    double br_dgamma(double x, double shape, double scale, int give_log);
+    double br_pgamma(double x, double alph, double scale, int lower_tail, int log_p);
+    double br_qgamma(double p, double alpha, double scale, int lower_tail, int log_p);
 }
 
 namespace bnc {
@@ -180,17 +180,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(dgamma, bnc_dgamma);
+    R_DFUNC_INTERFACE_4ARG(dgamma, br_dgamma);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(pgamma, bnc_pgamma);
+    R_PFUNC_INTERFACE_5ARG(pgamma, br_pgamma);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qgamma, bnc_qgamma);
+    R_QFUNC_INTERFACE_5ARG(qgamma, br_qgamma);
     
     
 }  // namespace bnc

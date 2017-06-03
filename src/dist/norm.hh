@@ -1,13 +1,13 @@
 #ifndef NORM_H
 #define NORM_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 #include <dist/dist.hh>
 
 extern "C" {
-    double bnc_dnorm4(double x, double mu, double sigma, int give_log);
-    double bnc_pnorm5(double x, double mu, double sigma, int lower_tail, int log_p);
-    double bnc_qnorm5(double p, double mu, double sigma, int lower_tail, int log_p);
+    double br_dnorm4(double x, double mu, double sigma, int give_log);
+    double br_pnorm5(double x, double mu, double sigma, int lower_tail, int log_p);
+    double br_qnorm5(double p, double mu, double sigma, int lower_tail, int log_p);
 }
 
 namespace bnc {
@@ -33,17 +33,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(dnorm, bnc_dnorm4);
+    R_DFUNC_INTERFACE_4ARG(dnorm, br_dnorm4);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(pnorm, bnc_pnorm5);
+    R_PFUNC_INTERFACE_5ARG(pnorm, br_pnorm5);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qnorm, bnc_qnorm5);
+    R_QFUNC_INTERFACE_5ARG(qnorm, br_qnorm5);
     
 }  // namespace bnc
 

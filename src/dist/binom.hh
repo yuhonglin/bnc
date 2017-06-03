@@ -1,12 +1,12 @@
 #ifndef BINOM_H
 #define BINOM_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_dbinom(double x, double n, double p, int give_log);
-    double bnc_pbinom(double x, double n, double p, int lower_tail, int log_p);
-    double bnc_qbinom(double p, double n, double pr, int lower_tail, int log_p);
+    double br_dbinom(double x, double n, double p, int give_log);
+    double br_pbinom(double x, double n, double p, int lower_tail, int log_p);
+    double br_qbinom(double p, double n, double pr, int lower_tail, int log_p);
 }
 
 namespace bnc {
@@ -66,7 +66,7 @@ namespace bnc {
 	    nsave = n;
 	    if (np < 30.0) {
 		/* inverse cdf logic for mean less than 30 */
-		qn = JR_pow_di(q, n);
+		qn = BR_pow_di(q, n);
 		goto L_np_small;
 	    } else {
 		ffm = np + p;
@@ -187,17 +187,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(dbinom, bnc_dbinom);
+    R_DFUNC_INTERFACE_4ARG(dbinom, br_dbinom);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(pbinom, bnc_pbinom);
+    R_PFUNC_INTERFACE_5ARG(pbinom, br_pbinom);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qbinom, bnc_qbinom);
+    R_QFUNC_INTERFACE_5ARG(qbinom, br_qbinom);
 
     
 }  // namespace bnc

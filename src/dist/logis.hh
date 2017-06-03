@@ -1,13 +1,13 @@
 #ifndef LOGIS_H
 #define LOGIS_H
 
-#include <dist/jrutil.hh>
+#include <dist/brutil.hh>
 
 extern "C" {
-    double bnc_dlogis(double x, double location, double scale, int give_log);
-    double bnc_plogis(double x, double location, double scale,
+    double br_dlogis(double x, double location, double scale, int give_log);
+    double br_plogis(double x, double location, double scale,
 		      int lower_tail, int log_p);
-    double bnc_qlogis(double p, double location, double scale,
+    double br_qlogis(double p, double location, double scale,
 		      int lower_tail, int log_p);
 }
 
@@ -36,17 +36,17 @@ namespace bnc {
     /*
      *  D functions 
      */
-    R_DFUNC_INTERFACE_4ARG(dlogis, bnc_dlogis);
+    R_DFUNC_INTERFACE_4ARG(dlogis, br_dlogis);
 
     /* 
      *  P functions
      */
-    R_PFUNC_INTERFACE_5ARG(plogis, bnc_plogis);
+    R_PFUNC_INTERFACE_5ARG(plogis, br_plogis);
 
     /* 
      *  Q functions
      */
-    R_QFUNC_INTERFACE_5ARG(qlogis, bnc_qlogis);
+    R_QFUNC_INTERFACE_5ARG(qlogis, br_qlogis);
 
     
 }  // namespace bnc
