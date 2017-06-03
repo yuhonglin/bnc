@@ -88,15 +88,6 @@ namespace bnc {
     }
 
 
-    static double br_log_multigamma(double n, unsigned int p)
-    {
-	double y =  (p * (p-1) * log(3.141592653589793238462643383280))/4;
-	for (unsigned int j = 0; j < p; ++j) {
-	    y += br_lgammafn((n-j)/2);
-	}
-	return y;
-    }
-
     double dwishart(const Matrix& x, const int& df,
 		    const Matrix& scale, const SCALE& s=NORMAL)
     {
