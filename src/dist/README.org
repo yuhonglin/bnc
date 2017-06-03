@@ -13,10 +13,9 @@ all interface identical, we use the first argument as the return value.
 
 * Done
   1. Scalar distributions implemented in rmath library.
-
+  2. Multivariate normal
 * Todo
-  1. Multivariate normal
-  2. Multivariate t Distribution
-  3. (inverse) Wishart
-  4. (Multivariate) Pareto distributions
-  5. Dirichlet Distribution
+  1. Multivariate t Distribution
+  2. (inverse) Wishart
+  3. (Multivariate) Pareto distributions
+  4. Dirichlet Distribution

@@ -155,6 +155,7 @@ namespace bnc {
 	    }
 	} else if (ms == MAT_FULL) {
 	    ret = mdot<UPPER_TRIANGLE>(A);
+	    // ret.triangularView<Eigen::Lower>() = ret.transpose(); // this may unnecessarily copy the diagnal
 	    tri2sym_inplace<UPPER_TRIANGLE>(ret);
 	} else {
 	    LOG_ERROR("Matrix structure not supported.");
