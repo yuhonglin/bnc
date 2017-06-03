@@ -12,16 +12,20 @@ namespace bnc {
     const int Dynamic = Eigen::Dynamic;
 
     // matrix
-    template<int m=Dynamic, int n=Dynamic, class DataType=double>
+    template<class DataType=double, int m=Dynamic, int n=Dynamic>
     using MatrixTemplate = Eigen::Matrix<DataType, m, n>;
 
     using Matrix = MatrixTemplate<>;
+    using dMatrix = MatrixTemplate<>;
+    using iMatrix = MatrixTemplate<int>;
 
     // vector
-    template<int m=Dynamic, class DataType=double>
+    template<class DataType=double, int m=Dynamic>
     using VectorTemplate = Eigen::Matrix<DataType, m, 1>;
 
     using Vector = VectorTemplate<>;
+    using dVector = VectorTemplate<>;
+    using iVector = VectorTemplate<int>;
 
     
 }  // namespace bnc
