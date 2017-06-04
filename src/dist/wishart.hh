@@ -123,6 +123,42 @@ namespace bnc {
 	    return num - denom;
 	}
     }
+
+    template<RWISHART_ALG alg=RWISHART_RCORE, class RNGType>
+    Matrix riwishart(const int& df, const Matrix& scale, RNGType* rng) {
+	Matrix ret = rwishart<alg>
+	    (df, scale.llt().solve(Matrix::Identity(scale.rows(),scale.cols())), rng)
+	    .llt().solve(Matrix::Identity(scale.rows(),scale.cols()));
+	ASSERT_MSG(!ret.hasNaN(), "meet NaN, maybe the sample is singular.");
+	return ret;
+    }
+
+    double diwishart(const Matrix& x, const int& df,
+		    const Matrix& scale, const SCALE& s=NORMAL)
+    {
+	// adapt from MCMCpack's diwish
+	double gammapart = 0.;
+	for (int i=0; i<x.rows(); i++) {
+	    gammapart += lgamma((df-i)/2.);
+	}
+	double ldenom = gammapart + 0.5*df*x.rows()*log(2.) +
+	    0.25*x.rows()*(x.rows()-1)*log(3.141592653589793238462643383280);
+	double halflogdetS = Matrix(scale.llt().matrixL()).diagonal()
+	    .array().log().sum();
+	Matrix choW = x.llt().matrixL();
+	double halflogdetW = choW.diagonal().array().log().sum();
+	double exptrace = (choW.transpose().triangularView<Eigen::Upper>().solve(
+	    choW.triangularView<Eigen::Lower>().solve(Matrix::Identity(x.rows(),x.cols()))).array()*
+			   scale.array()).sum(); // FIXME: this can be faster
+	double lnum = df*halflogdetS - (df+x.rows()+1)*halflogdetW - 0.5*exptrace;
+
+	if (s == NORMAL) {
+	    return exp(lnum - ldenom);
+	} else {
+	    return lnum - ldenom;	    
+	}
+    }
+    
     
 }  // namespace bnc
 

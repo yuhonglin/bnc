@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
 //    for(int i=0; i<10; i++)
 //	cout << rng.normal() << endl;
     
-    auto n = rWishart(10, m, &rng);
+    auto n = rWishart(10, m.inverse(), &rng);
     cout << n << endl;
     return 0;
 }
