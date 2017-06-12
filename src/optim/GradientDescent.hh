@@ -35,22 +35,21 @@ namespace bnc {
 		    res.nIter++;
 		    // compute direct and bound
 		    direct = -g(res.x);
-		    double uu  = NEGINF;
+		    double uu  = INF;
 		    double tmp = 0.;
 		    for (int i=0; i<x0.size(); i++) {
 			if (direct(i) > 0) {
 			    tmp = (u(i)-res.x(i))/direct(i);
-			    if (uu<tmp) uu = tmp;
+			    if (uu>tmp) uu = tmp;
 			} else {
 			    tmp = (l(i)-res.x(i))/direct(i);
-			    if (uu<tmp) uu = tmp;
+			    if (uu>tmp) uu = tmp;
 			}
 		    }
-
-		    uu = std::min(uu,1e15);
+		    uu = std::max(std::min(uu,1e15),0.);
 		    // search along direct
 		    double step = LS::search(f, g, res.x, direct,
-					     1e-15, uu, tol);
+					     0., uu, tol);
 			
 		    dx = step*direct;
 		    res.x += step*direct;

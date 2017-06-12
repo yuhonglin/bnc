@@ -9,7 +9,7 @@ namespace bnc {
     const double INF = std::numeric_limits<double>::infinity();
     const double NEGINF = -std::numeric_limits<double>::infinity();
     const double XTOL = 1e-7;
-    const double DNTOL = 1e-7;  // diff normal tolerance
+    const double DNTOL = 1e-13;  // diff normal tolerance
 }  // namespace bnc
 
 #endif /* CONSTANT_H */
