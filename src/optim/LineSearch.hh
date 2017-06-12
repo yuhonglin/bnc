@@ -1,3 +1,16 @@
+/*
+ * FIXME: because in many functions, computing f and g are
+ * similar, so make sure that f and g are always computed 
+ * one after the other. But there is one case: 
+ * to test BNC_LS_U1, we need both ft and fl. But the 
+ * following code may or may not need gt and gl
+ * so one needs to either compute both gt gl before BNC_LS_U1
+ * or recompute ft or fl when gt gl is needed. This may 
+ * be fixed by recorder U1,U2,U3.
+ *
+ */
+
+
 #ifndef LINESEARCH_H
 #define LINESEARCH_H
 
@@ -84,10 +97,10 @@ namespace bnc { namespace optim { namespace lsrch {
 		}
 
 		template <typename F, typename G>
-		static inline double safeguard_bisect(const double& at, const double& al,
+		static inline double safeguard_bisect(const double& al, const double& at,
 						      const double& au, const double& fl,
-						      const double& ft, const double& gt,
-						      F f, G g,
+						      const double& ft, const double& gl,
+						      const double& gt, F f, G g,
 						      const Vector& x,
 						      const Vector& direct) {
 		    // when this function is called, I+ (\in [l,u]) should have
@@ -97,7 +110,6 @@ namespace bnc { namespace optim { namespace lsrch {
 		    // I+ is not inside [l,u], it usually implies al and au
 		    // are far from a*.
 
-		    const double gl  = BNC_LS_dphi(al);
 		    const double lpt = al+at;
 		    const double lmt = al-at;
 		    double a, b, c;
@@ -138,7 +150,8 @@ namespace bnc { namespace optim { namespace lsrch {
 			// finally, return the minimiser of cubic interpolation
 			// of fu, ft, gu, gt
 			const double fu = BNC_LS_phi(au);
-			const double gu = BNC_LS_dphi(au);
+			const double gu = BNC_LS_dphi(au); // dphi call must be preceded by
+			                                   // a phi call with same input
 			const double upt = au+at;
 			const double umt = au-at;
 			double a = (fu-ft + (gu*at-gt*au) - 0.5*(gu-gt)*upt) /
@@ -178,7 +191,7 @@ namespace bnc { namespace optim { namespace lsrch {
 
 		    bool   insided = false; // whether [al,au] \in [l,u]
 
-		    double fl, ft, gt;
+		    double fl, ft, gt, gl;
 		    
 		    while (true) {
 			// test convergence
@@ -188,9 +201,9 @@ namespace bnc { namespace optim { namespace lsrch {
 
 			// compute ft, fl, gt
 			ft = BNC_LS_phi(at);
-			fl = BNC_LS_phi(al);
 			gt = BNC_LS_dphi(at); // FIXME: checking BNC_LS_U1 does not need
 			                      //        does not need gt
+			fl = BNC_LS_phi(al);
 			
 			if (BNC_LS_U1) {
 			    // [al,at] will contain a*
@@ -201,8 +214,9 @@ namespace bnc { namespace optim { namespace lsrch {
 				// only do this when insided,
 				// otherwise it the interval may not
 				// converge inside [l,u]
-				at = safeguard_bisect(at, al, au,
-						      fl, ft, gt, f, g, x, direct);
+				gl = BNC_LS_dphi(al); // last phi call is on al
+				at = safeguard_bisect(al, at, au,
+						      fl, ft, gl, gt, f, g, x, direct);
 				continue;
 			    }
 			    at = safeguard_refine(at, al, au);
@@ -228,8 +242,9 @@ namespace bnc { namespace optim { namespace lsrch {
 				// only do this when insided,
 				// otherwise it the interval may not
 				// converge inside [l,u]
-				at = safeguard_bisect(at, al, au,
-						      fl, ft, gt, f, g, x, direct);
+				gl = BNC_LS_dphi(al); // last phi call is on al
+				at = safeguard_bisect(al, at, au,
+						      fl, ft, gl, gt, f, g, x, direct);
 				continue;
 			    }
 			    at = safeguard_refine(at, al, au);
@@ -237,7 +252,6 @@ namespace bnc { namespace optim { namespace lsrch {
 				return l;
 			    }
 			}
-
 			insided = (au<=u) && (al>=l); // FIXME: I feel this can be
 			                               // faster because when one
 			                               // pass of case 1,2,3 is processed
