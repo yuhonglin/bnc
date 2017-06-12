@@ -55,21 +55,33 @@ namespace bnc { namespace optim { namespace lsrch {
 		 * speed up convergence when I+ is already in [l,u]
 		 */
 
-#define BNC_LS_COMPUTE_ac						\
-		a = (fl-ft + (gl*at-gt*al) - 0.5*(gl-gt)*lpt) /		\
-			       (lmt * (al*(al+4*at) - (0.5*at+3)*at - 1.5)); \
-		b = 0.5*(gl-gt)/lmt - 1.5*a*lpt;			\
-		c = 3*a*al*at - (gl*at-gt*al)/lmt;			\
-		ac = (-2*b + std::sqrt(4*b*b-12*a*c)) / (6*a);		
+		static double compute_ac (const double& al, const double& at,
+					  const double& fl, const double& ft,
+					  const double& gl, const double& gt,
+					  const double& lpt, const double& lmt) {
+		    const double a = (fl-ft + (gl*at-gt*al) - 0.5*(gl-gt)*lpt) /	
+			(lmt * (al*(al+4*at) - (0.5*at+3)*at - 1.5)); 
+		    const double b = 0.5*(gl-gt)/lmt - 1.5*a*lpt;		
+		    const double c = 3*a*al*at - (gl*at-gt*al)/lmt;		
+		    return (-2*b + std::sqrt(4*b*b-12*a*c)) / (6*a);
+		}
 
-#define BNC_LS_COMPUTE_aq					\
-		a = ((ft-fl) + gl*lmt) / ((2*at-al-at)/lmt);	\
-		b = gl - 2*a*at;				\
-		aq = -b/(2*a);				
+		static double compute_aq (const double& al, const double& at,
+					  const double& fl, const double& ft,
+					  const double& gl, const double& gt,
+					  const double& lpt, const double& lmt) {
+		    const double a = ((ft-fl) + gl*lmt) / ((2*at-lpt)/lmt);
+		    const double b = gl - 2*a*at;
+		    return -b/(2*a);
+		}
 
-#define BNC_LS_COMPUTE_as				\
-		a = 0.5*(gl-gt)/lmt;			\
-		as = al - 0.5*gl/a;			\
+		static double compute_as (const double& al, const double& at,
+					  const double& fl, const double& ft,
+					  const double& gl, const double& gt,
+					  const double& lpt, const double& lmt) {
+		    double a = 0.5*(gl-gt)/lmt;			
+		    return al - 0.5*gl/a;
+		}
 
 		template <typename F, typename G>
 		static inline double safeguard_bisect(const double& at, const double& al,
@@ -95,10 +107,10 @@ namespace bnc { namespace optim { namespace lsrch {
 			// First, compute ac, the minimiser of cubic
 			// interpolation of fl,ft,gl,gt
 			// assuming the cubic is ax^3+bx^2+cx+d
-			BNC_LS_COMPUTE_ac;
+			ac = compute_ac(al,at,fl,ft,gl,gt,lpt,lmt);
 			// Then, compute aq, the minimiser of quadratic
 			// interpolation of fl, ft, gl
-			BNC_LS_COMPUTE_aq;
+			aq = compute_aq(al,at,fl,ft,gl,gt,lpt,lmt);
 			// choose
 			return (std::abs(ac-al) < std::abs(aq-al)) ?  ac : (0.5*(aq+ac));
 			
@@ -106,19 +118,19 @@ namespace bnc { namespace optim { namespace lsrch {
 			// First, compute ac, the minimiser of cubic
 			// interpolation of fl,ft,gl,gt
 			// assuming the cubic is ax^3+bx^2+cx+d
-			BNC_LS_COMPUTE_ac;
+			ac = compute_ac(al,at,fl,ft,gl,gt,lpt,lmt);			
 			// Then, compute as, the minimiser of quadratic
 			// interpolation of fl, gl and gt
-			BNC_LS_COMPUTE_as;			
+			as = compute_as(al,at,fl,ft,gl,gt,lpt,lmt);
 			return (std::abs(ac-at)>=std::abs(as-at)) ? ac : as;
 		    } else if (std::abs(gt) <= std::abs(gl)) {
 			// First, compute ac, the minimiser of cubic
 			// interpolation of fl,ft,gl,gt
 			// assuming the cubic is ax^3+bx^2+cx+d
-			BNC_LS_COMPUTE_ac;			
+			ac = compute_ac(al,at,fl,ft,gl,gt,lpt,lmt);
 			// Then, compute as, the minimiser of quadratic
 			// interpolation of fl, gl and gt
-			BNC_LS_COMPUTE_as;			
+			as = compute_as(al,at,fl,ft,gl,gt,lpt,lmt);
 			double ret = (std::abs(ac-at)<std::abs(as-at)) ? ac : as;
 			return (at>al) ? std::min(at+0.66*(au-at), ret) :
 			    std::max(at + 0.66*(au-at), ret);
