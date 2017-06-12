@@ -20,8 +20,6 @@
 
 #include <config.hh>
 
-using namespace std;
-
 namespace bnc {
 
     /** 
@@ -33,7 +31,7 @@ namespace bnc {
 #define LOG(L, M)							\
     if ((L) > Logger::getLogLevel()) { }				\
     else { std::stringstream __s; if (true) { __s << "(" << __FILE__ << ":" << __LINE__ << ") "; } \
-      __s << M; Logger::logMessage(L, __s.str()); }
+	__s << M; Logger::logMessage(L, __s.str()); }
     /** 
      * log micro that only logs once
      * 
@@ -44,7 +42,7 @@ namespace bnc {
     static bool _LoggedMessage ## __LINE__ = false;			\
     if (((L) > Logger::getLogLevel()) || _LoggedMessage ## __LINE__) { } \
     else { std::stringstream __s; if (L == LL_FATAL) { __s << "(" << __FILE__ << ", " << __LINE__ << ") "; } \
-      __s << M; Logger::logMessage(L, __s.str()); _LoggedMessage ## __LINE__ = true;}
+	__s << M; Logger::logMessage(L, __s.str()); _LoggedMessage ## __LINE__ = true;}
 
 #define LOG_EXCEPT(M) {std::stringstream __s; __s << "(" << __FILE__ << ", " << __LINE__ << ") " << M; throw runtime_error(__s.str());}
 #define LOG_FATAL(M) LOG(LL_FATAL, M)
@@ -83,14 +81,14 @@ namespace bnc {
     //! Verbosity level in logging.
 
     typedef enum _LogLevel {
-      LL_FATAL = 0,  //!< An unrecoverable error has occurred and the code will terminate
-      LL_ERROR,      //!< A recoverable error has occurred, e.g., a missing file. 
-      LL_WARNING,    //!< Something unexpected happened, e.g., a parameter is zero.
-      LL_MESSAGE,    //!< Standard messages, e.g., application-level progress information.
-      LL_STATUS,     //!< Status messages, e.g., image names and sizes during loading.
-      LL_VERBOSE,    //!< Verbose messages, e.g., intermediate performance results.
-      LL_METRICS,    //!< Metrics messages, e.g., detailed process statistics.
-      LL_DEBUG	//!< Debugging messages, e.g., matrix inversion results, etc. 
+	LL_FATAL = 0,  //!< An unrecoverable error has occurred and the code will terminate
+	LL_ERROR,      //!< A recoverable error has occurred, e.g., a missing file. 
+	LL_WARNING,    //!< Something unexpected happened, e.g., a parameter is zero.
+	LL_MESSAGE,    //!< Standard messages, e.g., application-level progress information.
+	LL_STATUS,     //!< Status messages, e.g., image names and sizes during loading.
+	LL_VERBOSE,    //!< Verbose messages, e.g., intermediate performance results.
+	LL_METRICS,    //!< Metrics messages, e.g., detailed process statistics.
+	LL_DEBUG	//!< Debugging messages, e.g., matrix inversion results, etc. 
     } LogLevel;
 
     // Logger -----------------------------------------------------------------
@@ -102,98 +100,98 @@ namespace bnc {
     class Logger
     {
     public:
-      //! callback for fatal errors
-      static void (*showFatalCallback)(const char *message);
-      //! callback for non-fatal errors
-      static void (*showErrorCallback)(const char *message);
-      //! callback for warnings
-      static void (*showWarningCallback)(const char *message);
-      //! callback for status updates
-      static void (*showStatusCallback)(const char *message);
-      //! callback for messages (standard, verbose and debug)
-      static void (*showMessageCallback)(const char *message);
+	//! callback for fatal errors
+	static void (*showFatalCallback)(const char *message);
+	//! callback for non-fatal errors
+	static void (*showErrorCallback)(const char *message);
+	//! callback for warnings
+	static void (*showWarningCallback)(const char *message);
+	//! callback for status updates
+	static void (*showStatusCallback)(const char *message);
+	//! callback for messages (standard, verbose and debug)
+	static void (*showMessageCallback)(const char *message);
 
-      //! callback for displaying progress
-      static void (*showProgressCallback)(const char *status, double p);
+	//! callback for displaying progress
+	static void (*showProgressCallback)(const char *status, double p);
 
     private:
-      static ofstream _log;
-      static LogLevel _logLevel;
-      static LogLevel _lastMessageLevel;
+	static std::ofstream _log;
+	static LogLevel _logLevel;
+	static LogLevel _lastMessageLevel;
 
-      static string _progressStatus;
-      static int _lastProgress;
-      static int _progressLimit;
-      static bool _bRunning;
+	static std::string _progressStatus;
+	static int _lastProgress;
+	static int _progressLimit;
+	static bool _bRunning;
 
     public:
-      Logger();
-      ~Logger();
+	Logger();
+	~Logger();
 
-      //! open a log file
-      static void initialize(const char *filename,
-			     bool bOverwrite = false);
-      //! open a log file with particular logging level
-      static void initialize(const char *filename,
-			     bool bOverwrite, LogLevel level);
-      //! set the current verbosity level
-      static inline void setLogLevel(LogLevel level) {
-        _logLevel = level;
-      }
-      //! set the current verbosity level unless already at a lower level
-      //! and return previous log level
-      static inline LogLevel setAtLeastLogLevel(LogLevel level) {
-        const LogLevel lastLevel = _logLevel;
-        if (_logLevel < level) _logLevel = level;
-        return lastLevel;
-      }
-      //! get the current verbosity level
-      static inline LogLevel getLogLevel() {
-        return _logLevel;
-      }
-      //! check whether current verbosity level is above given level
-      static inline bool checkLogLevel(LogLevel level) {
-        return (_logLevel >= level);
-      }
+	//! open a log file
+	static void initialize(const char *filename,
+			       bool bOverwrite = false);
+	//! open a log file with particular logging level
+	static void initialize(const char *filename,
+			       bool bOverwrite, LogLevel level);
+	//! set the current verbosity level
+	static inline void setLogLevel(LogLevel level) {
+	    _logLevel = level;
+	}
+	//! set the current verbosity level unless already at a lower level
+	//! and return previous log level
+	static inline LogLevel setAtLeastLogLevel(LogLevel level) {
+	    const LogLevel lastLevel = _logLevel;
+	    if (_logLevel < level) _logLevel = level;
+	    return lastLevel;
+	}
+	//! get the current verbosity level
+	static inline LogLevel getLogLevel() {
+	    return _logLevel;
+	}
+	//! check whether current verbosity level is above given level
+	static inline bool checkLogLevel(LogLevel level) {
+	    return (_logLevel >= level);
+	}
 
-      //! log a message (see also \p LOG_* macros)
-      static void logMessage(LogLevel level, const string& msg);
+	//! log a message (see also \p LOG_* macros)
+	static void logMessage(LogLevel level, const string& msg);
 
-      // progress feedback
-      static void setRunning(bool bRunning) {
-        _bRunning = bRunning;
-      }
-      static bool isRunning() {
-        return _bRunning;
-      }
-      static void initProgress(const char *status = NULL, int maxProgress = 100) {
-        _progressStatus = status == NULL ? string("") : string(status);
-        _lastProgress = 0; _progressLimit = maxProgress; updateProgress(0.0);
-      }
-      static void setProgressStatus(const char *status) {
-        if (status == NULL) {
-	  _progressStatus.clear();
-        } else {
-	  _progressStatus = string(status);
-        }
-        if (showProgressCallback != NULL) {
-	  showProgressCallback(_progressStatus.c_str(),
-			       (double)_lastProgress / (double)_progressLimit);
-        }
-      }
-      static bool incrementProgress() {
-        if (_lastProgress < _progressLimit) {
-	  _lastProgress += 1;
-	  updateProgress((double)_lastProgress / (double)_progressLimit);
-        }
-        return _bRunning;
-      }
-      static bool updateProgress(double p) {
-        if (showProgressCallback != NULL) {
-	  showProgressCallback(_progressStatus.c_str(), p);
-        }
-        return _bRunning;
-      }
+	// progress feedback
+	static void setRunning(bool bRunning) {
+	    _bRunning = bRunning;
+	}
+	static bool isRunning() {
+	    return _bRunning;
+	}
+	static void initProgress(const char *status = NULL, int maxProgress = 100) {
+	    _progressStatus = status == NULL ? std::string("") : std::string(status);
+	    _lastProgress = 0; _progressLimit = maxProgress; updateProgress(0.0);
+	}
+	static void setProgressStatus(const char *status) {
+	    if (status == NULL) {
+		_progressStatus.clear();
+	    } else {
+		_progressStatus = std::string(status);
+	    }
+	    if (showProgressCallback != NULL) {
+		showProgressCallback(_progressStatus.c_str(),
+				     (double)_lastProgress / (double)_progressLimit);
+	    }
+	}
+	static bool incrementProgress() {
+	    if (_lastProgress < _progressLimit) {
+		_lastProgress += 1;
+		updateProgress((double)_lastProgress / (double)_progressLimit);
+	    }
+	    return _bRunning;
+	}
+	static bool updateProgress(double p) {
+	    if (showProgressCallback != NULL) {
+		showProgressCallback(_progressStatus.c_str(), p);
+	    }
+	    return _bRunning;
+	}
     };
 
 }
