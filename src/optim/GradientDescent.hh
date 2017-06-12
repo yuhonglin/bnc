@@ -20,8 +20,8 @@ namespace bnc {
 			      const Vector& l, const Vector& u,
 			      const double& tol=DNTOL,
 			      const int& maxIter=1000) {
-		ASSERT_MSG( !(l.array()>x0.array()).any() &&
-			    !(x0.array()>u.array()).any(),
+		ASSERT_MSG( (l.array()<=x0.array()).all() &&
+			    (x0.array()<=u.array()).all(),
 			    "Infeasible inputs" );
 		
 		Result res;
@@ -35,13 +35,23 @@ namespace bnc {
 		    res.nIter++;
 		    // compute direct and bound
 		    direct = -g(res.x);
-		    auto tmpu = (u-res.x).array()/direct.array();
-		    auto tmpl = (res.x-l).array()/direct.array();
+		    double uu  = NEGINF;
+		    double tmp = 0.;
+		    for (int i=0; i<x0.size(); i++) {
+			if (direct(i) > 0) {
+			    tmp = (u(i)-res.x(i))/direct(i);
+			    if (uu<tmp) uu = tmp;
+			} else {
+			    tmp = (l(i)-res.x(i))/direct(i);
+			    if (uu<tmp) uu = tmp;
+			}
+		    }
+
+		    uu = std::min(uu,1e15);
 		    // search along direct
 		    double step = LS::search(f, g, res.x, direct,
-					     std::max(std::max(tmpl.minCoeff(),tmpu.minCoeff()), 1e-15),
-					     std::min(std::min(tmpl.maxCoeff(),tmpu.maxCoeff()), 1e15),
-					     tol);
+					     1e-15, uu, tol);
+			
 		    dx = step*direct;
 		    res.x += step*direct;
 		    // check convergence

@@ -11,8 +11,8 @@
  */
 
 
-#ifndef LINESEARCH_H
-#define LINESEARCH_H
+#ifndef MORETHUENTE_H
+#define MORETHUENTE_H
 
 #include <iostream>
 #include <cmath>
@@ -275,4 +275,4 @@ namespace bnc { namespace optim { namespace lsrch {
     } // namespace optim
 } // namespace bnc
 
-#endif /* LINESEARCH_H */
+#endif 
