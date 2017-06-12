@@ -9,6 +9,7 @@
 
 #include <Eigen/Eigenvalues>
 #include <util/logger.hh>
+#include <util/constant.hh>
 #include <common/math.hh>
 #include <matrix/matrix.hh>
 #include <dist/norm.hh>
@@ -73,7 +74,7 @@ namespace bnc {
 
 	LOG_ERROR("Matrix decomposition method not supported, return NaN.");
 	return Vector::Constant(mu.size(),
-				std::numeric_limits<double>::quiet_NaN());
+				NaN);
     }
 
     // generate one sample but use eigen decomposition as input

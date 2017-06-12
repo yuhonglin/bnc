@@ -6,15 +6,16 @@
 #include <cmath>
 #include <cfloat>
 
+#include <util/constant.hh>
 #include <util/logger.hh>
 #include <common/math.hh>
 #include <dist/brconst.hh>
 
 namespace bnc {
     
-#define ML_POSINF	numeric_limits<double>::infinity()
-#define ML_NEGINF	-numeric_limits<double>::infinity()
-#define ML_NAN		numeric_limits<double>::quiet_NaN()
+#define ML_POSINF	INF
+#define ML_NEGINF	-INF
+#define ML_NAN		NaN
 #define ML_ERR_return_NAN { LOG_WARNING("return NaN"); return ML_NAN; }
     
 typedef enum { FALSE = 0, TRUE } Rboolean;    

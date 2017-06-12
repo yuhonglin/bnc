@@ -11,7 +11,7 @@
 #include <Eigen/Eigenvalues>
 
 #include <util/logger.hh>
-#include <util/checker.hh>
+#include <util/constant.hh>
 #include <common/math.hh>
 #include <matrix/matrix.hh>
 #include <dist/norm.hh>
@@ -84,7 +84,7 @@ namespace bnc {
 
 	LOG_ERROR("RWishart algorithm not supported, return NaN.");
 	return Matrix::Constant(scale.rows(),scale.cols(),
-				std::numeric_limits<double>::quiet_NaN());
+				NaN);
     }
 
 
