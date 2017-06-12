@@ -155,7 +155,7 @@ namespace bnc {
 	}
 
 	//! log a message (see also \p LOG_* macros)
-	static void logMessage(LogLevel level, const string& msg);
+	static void logMessage(LogLevel level, const std::string& msg);
 
 	// progress feedback
 	static void setRunning(bool bRunning) {
