@@ -186,7 +186,7 @@ namespace bnc { namespace optim { namespace lsrch {
 
 		    double al = 0., au = INF;
 		    double at = (l+u)/2.; // any initial value
-		    double prevI = 0.;
+		    double prevI = au-al;
 
 		    bool   insided = false; // whether [al,au] \in [l,u]
 
@@ -194,7 +194,7 @@ namespace bnc { namespace optim { namespace lsrch {
 		    
 		    while (true) {
 			// test convergence
-			prevI = au-al;
+			prevI = std::abs(au-al);
 			if (le(prevI, tol, tol))
 			    break;
 
@@ -207,7 +207,7 @@ namespace bnc { namespace optim { namespace lsrch {
 			if (BNC_LS_U1) {
 			    // [al,at] will contain a*
 			    au = at;
-			    if (insided && le(prevI*0.66,au-al,tol)) { 
+			    if (insided && le(prevI*0.66,std::abs(au-al),tol)) { 
 				// interval decrease is not enough
 				// try bisect safeguards
 				// only do this when insided,
@@ -235,7 +235,7 @@ namespace bnc { namespace optim { namespace lsrch {
 			    // [at,al] will contain a*
 			    al = at;
 			    au = al;
-			    if (insided && le(prevI*0.66,au-al,tol)) {
+			    if (insided && le(prevI*0.66,std::abs(au-al),tol)) {
 				// interval decrease is not enough
 				// try bisect safeguards
 				// only do this when insided,

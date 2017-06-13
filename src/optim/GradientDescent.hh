@@ -38,16 +38,26 @@ namespace bnc {
 		    direct.normalize();
 		    double uu  = INF;
 		    double tmp = 0.;
+		    // Find the common limit (uu)
+		    // and handle the active contraints.
+		    // The active contraints only
+		    // exist and are only useful when uu=0.
 		    for (int i=0; i<x0.size(); i++) {
 			if (direct(i) > 0) {
 			    tmp = (u(i)-res.x(i))/direct(i);
-			    if (uu>tmp) uu = tmp;
 			} else {
 			    tmp = (l(i)-res.x(i))/direct(i);
+			}
+			if (eq(tmp,0,tol)) {
+			    // current contraint is active
+			    // set this direction to 0.
+			    direct(i) = 0.;
+			    continue;
+			} else {
 			    if (uu>tmp) uu = tmp;
 			}
 		    }
-		    LOG_WARNING(uu);
+
 		    uu = std::max(std::min(uu,1e15),0.);
 		    // search along direct
 		    double step = LS::search(f, g, res.x, direct,
