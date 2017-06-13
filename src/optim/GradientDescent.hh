@@ -47,10 +47,11 @@ namespace bnc {
 			    if (uu>tmp) uu = tmp;
 			}
 		    }
+		    LOG_WARNING(uu);
 		    uu = std::max(std::min(uu,1e15),0.);
 		    // search along direct
 		    double step = LS::search(f, g, res.x, direct,
-					     0., uu, tol);
+					     1e-15, uu, tol);
 			
 		    dx = step*direct;
 		    res.x += step*direct;
