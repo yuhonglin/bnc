@@ -35,6 +35,7 @@ namespace bnc {
 		    res.nIter++;
 		    // compute direct and bound
 		    direct = -g(res.x);
+		    direct.normalize();
 		    double uu  = INF;
 		    double tmp = 0.;
 		    for (int i=0; i<x0.size(); i++) {
