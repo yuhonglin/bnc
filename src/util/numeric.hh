@@ -11,7 +11,10 @@ namespace bnc {
     }
     inline bool le(const double&a, const double&b, const double& tol) {
 	return a-b<=tol ? true : false;
-    }    
+    }
+    inline bool ge(const double&a, const double&b, const double& tol) {
+	return a-b>=tol ? true : false;
+    }
 }  // namespace bnc
 
 #endif /* NUMERIC_H */

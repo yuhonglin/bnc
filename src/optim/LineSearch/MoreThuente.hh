@@ -1,13 +1,26 @@
 /*
- * FIXME: because in many functions, computing f and g are
- * similar, so make sure that f and g are always computed 
- * one after the other. But there is one case: 
- * to test BNC_LS_U1, we need both ft and fl. But the 
- * following code may or may not need gt and gl
- * so one needs to either compute both gt gl before BNC_LS_U1
- * or recompute ft or fl when gt gl is needed. This may 
- * be fixed by recorder U1,U2,U3.
- *
+ * Basic facts of this algorithm:
+ * 
+ * 1. In general, the returned value may not satisfy Wolfe
+ *    condition.
+ * 2. But when the init gradient is decreasing, alpha_min=0
+ *    and alpha_max satisfies some condition (easily satisfied
+ *    in unconstrained optimisation), the Wolfe condition is
+ *    guaranteed to be satisfied by the returned step.
+ * 3. When one of the bounds is returned, the Wolfe condition
+ *    may NOT be satisfied.
+ * 4. If the returned step is not a bound, the Wolfe condition
+ *    is satisfied.
+ * 5. Normally, the returned step will satisfy Wolfe condition
+ *    with \eta=\mu. But in some cases, the step will satisfy
+ *    Wolfe condition with any \eta>0. This is done by let
+ *    the \phi'=0.
+ * 6. As long as the function is "normal", the algrithm will
+ *    terminate in finite steps.
+ * 7. Even if there exist local minimisers of \psi or \phi,
+ *    the algorithm may not find them (they may not even
+ *    satisfy the Wolfe condition in general). Whether one of
+ *    them will be found depends on the properties of bounds.
  */
 
 
@@ -16,6 +29,7 @@
 
 #include <iostream>
 #include <cmath>
+#include <limits>
 
 #include <util/constant.hh>
 #include <util/numeric.hh>
@@ -36,239 +50,336 @@ namespace bnc { namespace optim { namespace lsrch {
  * this function is to find a alpha>=0 such that
  *
  *                     f(alpha) <= f(0) + mu*f'(0)*alpha
- *                  |f'(alpha)| <= eta*|f'(0)|
+ *                  |f'(alpha)| <= mu*|f'(0)|
  *                            l <= alpha <= u
  * with some parameter mu and eta in (0,1).
  * 
+ * when l=0 and u is huge enough (e.g. depends on the lower bound of 
+ * f or \psi'(u)>=0), the Wolfe condition is guaranteed. But in 
+ * general, even the sufficient decrease condition is actually 
+ * not always guaranteed (this can be easily seen by examples).
+ * The nonguarantee cases all only happen when l or u is returned.
+ * So the algorithm will return a status showing that l or u is 
+ * returned.
+ *
  */
 	    class MoreThuente
 	    {
-
-#define BNC_LS_phi(s)   f(x+direct*s)
-#define BNC_LS_dphi(s)  (g(x+direct*s).dot(direct))
-#define BNC_LS_U1       (ft > fl)
-#define BNC_LS_U2       (ft <= fl && gt*(al-at)>0)
-#define BNC_LS_U3       (ft <= fl && gt*(al-at)<0)
-
-	
-		static inline double safeguard_U2(const double& at, const double& al,
-						  const double& au) {
-		    return std::min(at+1.1*(at-al), au);
-		}
-
-		static inline double safeguard_refine(const double& at, const double& al,
-						      const double& au) {
-		    return (al+std::max(7/12.*at, al))/2.;
-		}
-
+	    public:
+		// the interface
 		/**
-		 * safeguard_bisect
-		 * 
-		 * This function is rather complex but actually its purpose is just to
-		 * speed up convergence when I+ is already in [l,u]
+		 * \param f 
+		 * \param g 
+		 * \param f0 
+		 * \param g0 
+		 * \param x 
+		 * \param direct 
+		 * \param l If l>0, when return==l, wolfe condition may not be satisfied
+		 * \param u 
+		 * \param tol 
+		 * \return double
 		 */
-
-		static double compute_ac (const double& al, const double& at,
-					  const double& fl, const double& ft,
-					  const double& gl, const double& gt,
-					  const double& lpt, const double& lmt) {
-		    const double a = (fl-ft + (gl*at-gt*al) - 0.5*(gl-gt)*lpt) /	
-			(lmt * (al*(al+4*at) - (0.5*at+3)*at - 1.5)); 
-		    const double b = 0.5*(gl-gt)/lmt - 1.5*a*lpt;		
-		    const double c = 3*a*al*at - (gl*at-gt*al)/lmt;		
-		    return (-2*b + std::sqrt(4*b*b-12*a*c)) / (6*a);
-		}
-
-		static double compute_aq (const double& al, const double& at,
-					  const double& fl, const double& ft,
-					  const double& gl, const double& gt,
-					  const double& lpt, const double& lmt) {
-		    const double a = ((ft-fl) + gl*lmt) / ((2*at-lpt)/lmt);
-		    const double b = gl - 2*a*at;
-		    return -b/(2*a);
-		}
-
-		static double compute_as (const double& al, const double& at,
-					  const double& fl, const double& ft,
-					  const double& gl, const double& gt,
-					  const double& lpt, const double& lmt) {
-		    double a = 0.5*(gl-gt)/lmt;			
-		    return al - 0.5*gl/a;
-		}
-
-		template <typename F, typename G>
-		static inline double safeguard_bisect(const double& al, const double& at,
-						      const double& au, const double& fl,
-						      const double& ft, const double& gl,
-						      const double& gt, F f, G g,
-						      const Vector& x,
-						      const Vector& direct) {
-		    // when this function is called, I+ (\in [l,u]) should have
-		    // been already found.
-		    // And no worries for this because this function only aims
-		    // to speedup the near-solution (local) convergences. When
-		    // I+ is not inside [l,u], it usually implies al and au
-		    // are far from a*.
-
-		    const double lpt = al+at;
-		    const double lmt = al-at;
-		    double a, b, c;
-		    double ac, aq, as;
-		    if (ft > fl) {
-			// case 1
-			// First, compute ac, the minimiser of cubic
-			// interpolation of fl,ft,gl,gt
-			// assuming the cubic is ax^3+bx^2+cx+d
-			ac = compute_ac(al,at,fl,ft,gl,gt,lpt,lmt);
-			// Then, compute aq, the minimiser of quadratic
-			// interpolation of fl, ft, gl
-			aq = compute_aq(al,at,fl,ft,gl,gt,lpt,lmt);
-			// choose
-			return (std::abs(ac-al) < std::abs(aq-al)) ?  ac : (0.5*(aq+ac));
-			
-		    } else if (gt*gl < 0) {
-			// First, compute ac, the minimiser of cubic
-			// interpolation of fl,ft,gl,gt
-			// assuming the cubic is ax^3+bx^2+cx+d
-			ac = compute_ac(al,at,fl,ft,gl,gt,lpt,lmt);			
-			// Then, compute as, the minimiser of quadratic
-			// interpolation of fl, gl and gt
-			as = compute_as(al,at,fl,ft,gl,gt,lpt,lmt);
-			return (std::abs(ac-at)>=std::abs(as-at)) ? ac : as;
-		    } else if (std::abs(gt) <= std::abs(gl)) {
-			// First, compute ac, the minimiser of cubic
-			// interpolation of fl,ft,gl,gt
-			// assuming the cubic is ax^3+bx^2+cx+d
-			ac = compute_ac(al,at,fl,ft,gl,gt,lpt,lmt);
-			// Then, compute as, the minimiser of quadratic
-			// interpolation of fl, gl and gt
-			as = compute_as(al,at,fl,ft,gl,gt,lpt,lmt);
-			double ret = (std::abs(ac-at)<std::abs(as-at)) ? ac : as;
-			return (at>al) ? std::min(at+0.66*(au-at), ret) :
-			    std::max(at + 0.66*(au-at), ret);
-		    } else {
-			// finally, return the minimiser of cubic interpolation
-			// of fu, ft, gu, gt
-			const double fu = BNC_LS_phi(au);
-			const double gu = BNC_LS_dphi(au); // dphi call must be preceded by
-			                                   // a phi call with same input
-			const double upt = au+at;
-			const double umt = au-at;
-			double a = (fu-ft + (gu*at-gt*au) - 0.5*(gu-gt)*upt) /
-			    (umt * (au*(au+4*at) - (0.5*at+3)*at - 1.5));
-			double b = 0.5*(gu-gt)/umt - 1.5*a*upt;
-			double c = 3*a*au*at - (gu*at-gt*au)/umt;
-			double ac = (-2*b + std::sqrt(4*b*b-12*a*c)) / (6*a);
-			// Then, compute aq, the minimiser of quadratic
-			// interpouation of fu, ft, gu
-			a = ((ft-fu) + gu*umt) / ((2*at-au-at)/umt);
-			b = gu - 2*a*at;
-			return -b/(2*a);
-		    }
-		}
-		
-
-	    public:
 		template<typename T, typename G>
-		static double search(T f, G g, const Vector& x, const Vector& direct,
-				     const double& l=1e-15, const double& u=1e15,
-				     const double& tol=XTOL) {
-		    const double f0 = f(x);
-		    const double g0 = g(x).dot(direct);
-		    if (g0 > 0) {
-			// Error: direction is not a decreasing one.
-			// For smooth function, we can use -direct
-			// but this case happens often due to errors
-			// in higher level code, so better return
-			// something to notice them.
-			return -1.;
+		static double search(T fFunc, G gFunc,
+				     const Vector& x, const Vector& direct,
+				     const double& stpmin, 
+				     const double& stpmax) {
+		    // check inputs
+		    if (stpmin > stpmax || stpmin < 0) {
+			LOG_WARNING("invalid stpmax or stpmin");
+			return -1;
+		    }
+		    if (ge(gFunc(x).dot(direct),0.,1e-15)) {
+			return 0.;
 		    }
 
-		    double al = 0., au = INF;
-		    double at = (l+u)/2.; // any initial value
-		    double prevI = au-al;
-
-		    bool   insided = false; // whether [al,au] \in [l,u]
-
-		    double fl, ft, gt, gl;
+		    const double finit = fFunc(x);
+		    const double ginit = gFunc(x).dot(direct);
 		    
-		    while (true) {
-			// test convergence
-			prevI = std::abs(au-al);
-			if (le(prevI, tol, tol))
-			    break;
+		    // constants
+		    const double xtrapl = 1.1;
+		    const double xtrapu = 4.0;
+		    const double p5 = .5;
+		    const double ftol = 1e-3;
+		    const double gtol = .9;
+		    const double xtol = std::numeric_limits<double>::epsilon();
+		    const double p66 = .66;
 
-			// compute ft, fl, gt
-			ft = BNC_LS_phi(at);
-			gt = BNC_LS_dphi(at); // FIXME: checking BNC_LS_U1 does not need
-			                      //        does not need gt
-			fl = BNC_LS_phi(al);
-			
-			if (BNC_LS_U1) {
-			    // [al,at] will contain a*
-			    au = at;
-			    if (insided && le(prevI*0.66,std::abs(au-al),tol)) { 
-				// interval decrease is not enough
-				// try bisect safeguards
-				// only do this when insided,
-				// otherwise it the interval may not
-				// converge inside [l,u]
-				gl = BNC_LS_dphi(al); // last phi call is on al
-				at = safeguard_bisect(al, at, au,
-						      fl, ft, gl, gt, f, g, x, direct);
-				continue;
-			    }
-			    at = safeguard_refine(at, al, au);
-			    if (eq(at, l, tol)) {
-				return l;
-			    }
+		    bool brackt = false;
+		    int stage = 1;
+		    
+		    double f      = finit;
+		    double g      = ginit;
+		    double gtest  = ftol*ginit;
+		    double width  = stpmax - stpmin;
+		    double width1 = width/p5;
 
-			} else if (BNC_LS_U2) {
-			    al = at;
-			    at = safeguard_U2(at, al, au);
-			    if (eq(at, u, tol)) {
-				// I+ not found, return upper bound
-				// the {at} are increasing
-				return u;
-			    }
-			} else {
-			    // [at,al] will contain a*
-			    al = at;
-			    au = al;
-			    if (insided && le(prevI*0.66,std::abs(au-al),tol)) {
-				// interval decrease is not enough
-				// try bisect safeguards
-				// only do this when insided,
-				// otherwise it the interval may not
-				// converge inside [l,u]
-				gl = BNC_LS_dphi(al); // last phi call is on al
-				at = safeguard_bisect(al, at, au,
-						      fl, ft, gl, gt, f, g, x, direct);
-				continue;
-			    }
-			    at = safeguard_refine(at, al, au);
-			    if (eq(at, l, tol)) {
-				return l;
-			    }
+		    double stp    = xtol;
+		    
+		    double stx    = 0.;
+		    double fx     = finit;
+		    double gx     = ginit;
+		    double sty    = 0.;
+		    double fy     = finit;
+		    double gy     = ginit;
+		    double stmin  = 0.;
+		    double stmax  = stp + xtrapu*stp;
+
+		    double fm, fxm, fym, gm, gxm, gym;
+
+		    while(true) {		    
+
+			// If psi(stp) <= 0 and f'(stp) >= 0 for some step
+			// then the algorithm enters the second stage.
+			// This stage is not necessary but can generate
+			// better result
+			double ftest = finit + stp*gtest;
+			if (stage == 1 && f <= ftest && g >= 0.)
+			    stage = 2;
+
+			// test for warnings
+			if (brackt && (stp < stmin || stp > stmax)) {
+			    LOG_DEBUG("Rounding errors prevent progress");
+			    return stp;
 			}
-			insided = (au<=u) && (al>=l); // FIXME: I feel this can be
-			                               // faster because when one
-			                               // pass of case 1,2,3 is processed
-			                               // we may be able to know that
-			                               // au <= u or al >= l already. So
-			                               // maybe no need to check both
-			                               // everytime
-		    }  // while
+			if (brackt && stmax-stmin <= xtol*stmax) {
+			    LOG_DEBUG("xtol test satisfied");
+			    return stp;
+			}
+			if (stp == stpmax && f <= ftest && g <= gtest) {
+			    LOG_DEBUG("stp == stpmax");
+			    return stpmax;
+			}
+			if (stp == stpmin && (f > ftest || g <= gtest)) {
+			    LOG_DEBUG("stp == stpmin");
+			    return stpmin;
+			}
+			if (stp == stx) {
+			    LOG_DEBUG("stp == stx");
+			    return stp;
+			}
 
-		    return al;
+			// test for convergence
+			if (f <= ftest && std::abs(g) <= gtol*(-ginit)) {
+			    LOG_DEBUG("Converged");
+			    return stp;
+			}
+		    
+                        // A modified function is used to predict the step during the
+                        // first stage if a lower function value has been obtained but 
+                        // the decrease is not sufficient.
+			if (stage == 1 && f <= fx && f > ftest) {
+			    // Define the modified function and derivative values.
+			    fm  =  f - stp*gtest;
+			    fxm = fx - stx*gtest;
+			    fym = fy - sty*gtest;
+			    gm  =  g - gtest;
+			    gxm = gx - gtest;
+			    gym = gy - gtest;
+
+			    // Call dcstep to update stx, sty, and to compute the new step.
+			    dcstep(stx,fxm,gxm,sty,fym,gym,stp,fm,gm,brackt,stmin,stmax);
+
+			    // Reset the function and derivative values for f.
+			    fx = fxm + stx*gtest;
+			    fy = fym + sty*gtest;
+			    gx = gxm + gtest;
+			    gy = gym + gtest;
+			} else {
+			    dcstep(stx,fx,gx,sty,fy,gy,stp,f,g,brackt,stmin,stmax);
+			}
+
+                        // Decide if a bisection step is needed.
+
+			if (brackt) {
+			    if (std::abs(sty-stx) >= p66*width1) stp = stx + p5*(sty - stx);
+			    width1 = width;
+			    width = std::abs(sty-stx);
+			}
+
+                        // Set the minimum and maximum steps allowed for stp.
+			if (brackt) {
+			    stmin = std::min(stx,sty);
+			    stmax = std::max(stx,sty);
+			} else {
+			    stmin = stp + xtrapl*(stp - stx);
+			    stmax = stp + xtrapu*(stp - stx);
+			}
+ 
+                        // Force the step to be within the bounds stpmax and stpmin.
+			stp = std::max(stp,stpmin);
+			stp = std::min(stp,stpmax);
+
+                        // If further progress is not possible, let stp be the best
+                        // point obtained during the search.
+			if ((brackt && (stp <= stmin || stp >= stmax))
+			    || (brackt && stmax-stmin <= xtol*stmax)) stp = stx;
+			
+			// Obtain another function and derivative.
+			auto tmp = x + stp*direct;
+			f = fFunc(tmp);
+			g = gFunc(tmp).dot(direct);
+		    }
+		}
+
+		static void dcstep(double &stx, double &fx, double &dx, double &sty,
+				   double &fy, double &dy, double &stp, double &fp,
+				   double &dp, bool &brackt, double &stpmin, double &stpmax) {
+		    const double p66 = 0.66;
+
+		    // local variables
+		    double gamma,p,q,r,s,sgnd,stpc,stpf,stpq,theta;
+
+		    sgnd = dp*(dx/std::abs(dx));
+		    
+                    // First case: A higher function value. The minimum is bracketed. 
+                    // If the cubic step is closer to stx than the quadratic step, the 
+                    // cubic step is taken, otherwise the average of the cubic and 
+                    // quadratic steps is taken.
+
+		    if (fp > fx) {
+			theta = 3.*(fx - fp)/(stp - stx) + dx + dp;
+			s = std::max(std::max(std::abs(theta),std::abs(dx)),std::abs(dp));
+			gamma = s*std::sqrt(std::pow(theta/s,2) - (dx/s)*(dp/s));
+			if (stp < stx) gamma = -gamma;
+			p = (gamma - dx) + theta;
+			q = ((gamma - dx) + gamma) + dp;
+			r = p/q;
+			stpc = stx + r*(stp - stx);
+			stpq = stx + ((dx/((fx - fp)/(stp - stx) + dx))/2.)*
+	                                                            (stp - stx);
+			if (std::abs(stpc-stx) < std::abs(stpq-stx))
+			    stpf = stpc;
+			else
+			    stpf = stpc + (stpq - stpc)/2.;
+
+			brackt = true;
+			
+                    // Second case: A lower function value and derivatives of opposite 
+                    // sign. The minimum is bracketed. If the cubic step is farther from 
+                    // stp than the secant step, the cubic step is taken, otherwise the 
+                    // secant step is taken.
+		    } else if (sgnd < 0.) {
+			theta = 3.*(fx - fp)/(stp - stx) + dx + dp;
+			s = std::max(std::max(std::abs(theta),std::abs(dx)),std::abs(dp));
+			gamma = s*std::sqrt(pow(theta/s,2) - (dx/s)*(dp/s));
+			if (stp > stx) gamma = -gamma;
+			p = (gamma - dp) + theta;
+			q = ((gamma - dp) + gamma) + dx;
+			r = p/q;
+			stpc = stp + r*(stx - stp);
+			stpq = stp + (dp/(dp - dx))*(stx - stp);
+			if (std::abs(stpc-stp) > std::abs(stpq-stp)) 
+			    stpf = stpc;
+			else
+			    stpf = stpq;
+
+			brackt = true;
+
+                    // Third case: A lower function value, derivatives of the same sign,
+                    // and the magnitude of the derivative decreases.
+		    } else if (std::abs(dp) < std::abs(dx)) {
+
+                    // The cubic step is computed only if the cubic tends to infinity 
+                    // in the direction of the step or if the minimum of the cubic
+                    // is beyond stp. Otherwise the cubic step is defined to be the 
+                    // secant step.
+
+			theta = 3.*(fx - fp)/(stp - stx) + dx + dp;
+			s = std::max(std::max(std::abs(theta),std::abs(dx)),std::abs(dp));
+
+                    // The case gamma = 0 only arises if the cubic does not tend
+                    // to infinity in the direction of the step.
+
+			gamma = s*std::sqrt(std::max(0.,pow(theta/s,2)-(dx/s)*(dp/s)));
+			if (stp > stx) gamma = -gamma;
+			p = (gamma - dp) + theta;
+			q = (gamma + (dx - dp)) + gamma;
+			r = p/q;
+			if (r < 0. && gamma != 0.)
+			    stpc = stp + r*(stx - stp);
+			else if (stp > stx)
+			    stpc = stpmax;
+			else
+			    stpc = stpmin;
+
+			stpq = stp + (dp/(dp - dx))*(stx - stp);
+
+			if (brackt) {
+
+                    // A minimizer has been bracketed. If the cubic step is 
+                    // closer to stp than the secant step, the cubic step is 
+                    // taken, otherwise the secant step is taken.
+
+			    if (std::abs(stpc-stp) < std::abs(stpq-stp))
+				stpf = stpc;
+			    else
+				stpf = stpq;
+
+			    if (stp > stx)
+				stpf = std::min(stp+p66*(sty-stp),stpf);
+			    else
+				stpf = std::max(stp+p66*(sty-stp),stpf);
+			} else {
+			
+                            // A minimizer has not been bracketed. If the cubic step is 
+                            // farther from stp than the secant step, the cubic step is 
+                            // taken, otherwise the secant step is taken.
+
+			    if (std::abs(stpc-stp) > std::abs(stpq-stp))
+				stpf = stpc;
+			    else
+				stpf = stpq;
+
+			    stpf = std::min(stpmax,stpf);
+			    stpf = std::max(stpmin,stpf);
+			}
+
+                    // Fourth case: A lower function value, derivatives of the
+                    // same sign, and the magnitude of the derivative does not
+                    // decrease. If the minimum is not bracketed, the step is either
+                    // stpmin or stpmax, otherwise the cubic step is taken.
+
+		    } else {
+			if (brackt) {
+			    theta = 3.*(fp - fy)/(sty - stp) + dy + dp;
+			    s = std::max(std::max(std::abs(theta),std::abs(dy)),std::abs(dp));
+			    gamma = s*std::sqrt(pow(theta/s,2) - (dy/s)*(dp/s));
+			    if (stp > sty) gamma = -gamma;
+			    p = (gamma - dp) + theta;
+			    q = ((gamma - dp) + gamma) + dy;
+			    r = p/q;
+			    stpc = stp + r*(sty - stp);
+			    stpf = stpc;
+			} else if (stp > stx) 
+			    stpf = stpmax;
+			else
+			    stpf = stpmin;
+		    }
+		
+                    // Update the interval which contains a minimizer.
+
+		    if (fp > fx) {
+			sty = stp;
+			fy = fp;
+			dy = dp;
+		    } else {
+			if (sgnd < 0.) {
+			    sty = stx;
+			    fy = fx;
+			    dy = dx;
+			}
+			stx = stp;
+			fx = fp;
+			dx = dp;
+		    }
+
+                    // Compute the new step.
+
+		    stp = stpf;
+		    
 		}
 		
-#undef BNC_LS_phi
-#undef BNC_LS_psi
-	
-	    public:
-		MoreThuente();
-		~MoreThuente();
 	    };
 	
 	} // namespace linesearch
