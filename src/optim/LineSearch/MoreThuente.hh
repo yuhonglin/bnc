@@ -107,7 +107,7 @@ namespace bnc { namespace optim { namespace lsrch {
 		    const double xtrapu = 4.0;
 		    const double p5 = .5;
 		    const double ftol = 1e-3;
-		    const double gtol = 1e-1;
+		    const double gtol = .9;
 		    const double xtol = XTOL;
 		    const double p66 = .66;
 
@@ -181,6 +181,12 @@ namespace bnc { namespace optim { namespace lsrch {
                         // A modified function is used to predict the step during the
                         // first stage if a lower function value has been obtained but 
                         // the decrease is not sufficient.
+			// COMMENT: this is where I do not understand, according
+			// to the paper (it says, the alg will use stage1 from beginning
+			// until stage two then never return back), actually the
+			// condition is only stage1==true. And based on limited test,
+			// I cannot found big difference between this two. This may be
+			// a further modification of the authors in implementation.
 			if (stage1 && f <= fx && f > ftest) {
 			    // Define the modified function and derivative values.
 			    fm  =  f - stp*gtest;
