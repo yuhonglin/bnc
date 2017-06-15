@@ -1,6 +1,6 @@
 /*
  * Basic facts of this algorithm:
- * 
+ *
  * 1. In general, the returned value may not satisfy Wolfe
  *    condition.
  * 2. But when the init gradient is decreasing, alpha_min=0
@@ -10,7 +10,7 @@
  * 3. When one of the bounds is returned, the Wolfe condition
  *    may NOT be satisfied.
  * 4. If the returned step is not a bound, the Wolfe condition
- *    is satisfied.
+ *    is satisfied. (it will be a local minimiser of \psi or \phi)
  * 5. Normally, the returned step will satisfy Wolfe condition
  *    with \eta=\mu. But in some cases, the step will satisfy
  *    Wolfe condition with any \eta>0. This is done by let
@@ -20,9 +20,12 @@
  * 7. Even if there exist local minimisers of \psi or \phi,
  *    the algorithm may not find them (they may not even
  *    satisfy the Wolfe condition in general). Whether one of
- *    them will be found depends on the properties of bounds.
+ *    them will be found relates to the properties of bounds.
+ * 8. In all, for unconstraint optimisation problem and
+ *    feasible optimisation method, this result can be guaranteed
+ *    to satisfy the sufficient decrease condition (but
+ *    not for the curvature condition).
  */
-
 
 #ifndef MORETHUENTE_H
 #define MORETHUENTE_H
@@ -100,9 +103,9 @@ namespace bnc { namespace optim { namespace lsrch {
 		    const double xtrapl = 1.1;
 		    const double xtrapu = 4.0;
 		    const double p5 = .5;
-		    const double ftol = 1e-3;
-		    const double gtol = .9;
-		    const double xtol = std::numeric_limits<double>::epsilon();
+		    const double ftol = 1e-4;
+		    const double gtol = 1e-2;
+		    const double xtol = XTOL;
 		    const double p66 = .66;
 
 		    bool brackt = false;
@@ -126,23 +129,24 @@ namespace bnc { namespace optim { namespace lsrch {
 		    double stmax  = stp + xtrapu*stp;
 
 		    double fm, fxm, fym, gm, gxm, gym;
-
-		    while(true) {		    
+		    double ftest;
+		    
+		    while(true) {
 
 			// If psi(stp) <= 0 and f'(stp) >= 0 for some step
 			// then the algorithm enters the second stage.
 			// This stage is not necessary but can generate
 			// better result
-			double ftest = finit + stp*gtest;
+			ftest = finit + stp*gtest;
 			if (stage == 1 && f <= ftest && g >= 0.)
 			    stage = 2;
 
 			// test for warnings
-			if (brackt && (stp < stmin || stp > stmax)) {
+			if (brackt && (stp <= stmin || stp >= stmax)) {
 			    LOG_DEBUG("Rounding errors prevent progress");
 			    return stp;
 			}
-			if (brackt && stmax-stmin <= xtol*stmax) {
+			if (brackt && (stmax-stmin) <= xtol*stmax) {
 			    LOG_DEBUG("xtol test satisfied");
 			    return stp;
 			}
@@ -213,7 +217,7 @@ namespace bnc { namespace optim { namespace lsrch {
                         // If further progress is not possible, let stp be the best
                         // point obtained during the search.
 			if ((brackt && (stp <= stmin || stp >= stmax))
-			    || (brackt && stmax-stmin <= xtol*stmax)) stp = stx;
+			    || (brackt && (stmax-stmin) <= xtol*stmax)) stp = stx;
 			
 			// Obtain another function and derivative.
 			auto tmp = x + stp*direct;
