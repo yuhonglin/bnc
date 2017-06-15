@@ -71,15 +71,14 @@ namespace bnc { namespace optim { namespace lsrch {
 	    public:
 		// the interface
 		/**
-		 * \param f 
-		 * \param g 
-		 * \param f0 
-		 * \param g0 
-		 * \param x 
+		 * search
+		 * 
+		 * \param fFunc 
+		 * \param gFunc 
+		 * \param x
 		 * \param direct 
-		 * \param l If l>0, when return==l, wolfe condition may not be satisfied
-		 * \param u 
-		 * \param tol 
+		 * \param stpmin 
+		 * \param stpmax 
 		 * \return double
 		 */
 		template<typename T, typename G>
@@ -92,32 +91,37 @@ namespace bnc { namespace optim { namespace lsrch {
 			LOG_WARNING("invalid stpmax or stpmin");
 			return -1;
 		    }
-		    if (ge(gFunc(x).dot(direct),0.,1e-15)) {
-			return 0.;
-		    }
 
+		    // finit = phi(0)
+		    // ginit = phi'(0)
 		    const double finit = fFunc(x);
 		    const double ginit = gFunc(x).dot(direct);
+
+		    // check inputs
+		    if (ginit>=0.) {
+			return 0.;
+		    }
 		    
 		    // constants
 		    const double xtrapl = 1.1;
 		    const double xtrapu = 4.0;
 		    const double p5 = .5;
-		    const double ftol = 1e-4;
-		    const double gtol = 1e-2;
+		    const double ftol = 1e-3;
+		    const double gtol = 1e-1;
 		    const double xtol = XTOL;
 		    const double p66 = .66;
 
 		    bool brackt = false;
-		    int stage = 1;
+		    bool stage1 = true;
 		    
-		    double f      = finit;
-		    double g      = ginit;
 		    double gtest  = ftol*ginit;
 		    double width  = stpmax - stpmin;
 		    double width1 = width/p5;
 
-		    double stp    = xtol;
+		    double stp    = (stpmax+stpmin)*0.5;
+		    auto tmp = x + stp*direct;
+		    double f = fFunc(tmp);
+		    double g = gFunc(tmp).dot(direct);
 		    
 		    double stx    = 0.;
 		    double fx     = finit;
@@ -126,35 +130,40 @@ namespace bnc { namespace optim { namespace lsrch {
 		    double fy     = finit;
 		    double gy     = ginit;
 		    double stmin  = 0.;
-		    double stmax  = stp + xtrapu*stp;
+		    // According to paper, stmax should be initialised
+		    // as INF. But according to the lbfgsb.f, it should
+		    // be "stp + xtrapu*stp", I think the code is wrong,
+		    // or at least not suitable for here. If INF causes
+		    // error, try "stpmax*xtrapu" (I think initial stmax
+		    // is OK as long as stmax>stpmax).
+		    double stmax  = INF; //
 
 		    double fm, fxm, fym, gm, gxm, gym;
 		    double ftest;
-		    
-		    while(true) {
 
+		    while(true) {
 			// If psi(stp) <= 0 and f'(stp) >= 0 for some step
 			// then the algorithm enters the second stage.
 			// This stage is not necessary but can generate
 			// better result
 			ftest = finit + stp*gtest;
-			if (stage == 1 && f <= ftest && g >= 0.)
-			    stage = 2;
+			if (stage1 & (f <= ftest) & (g >= 0.))
+			    stage1 = false;
 
 			// test for warnings
-			if (brackt && (stp <= stmin || stp >= stmax)) {
+			if (brackt & ((stp <= stmin) | (stp >= stmax))) {
 			    LOG_DEBUG("Rounding errors prevent progress");
 			    return stp;
 			}
-			if (brackt && (stmax-stmin) <= xtol*stmax) {
+			if (brackt & ((stmax-stmin) <= xtol*stmax)) {
 			    LOG_DEBUG("xtol test satisfied");
 			    return stp;
 			}
-			if (stp == stpmax && f <= ftest && g <= gtest) {
+			if ((stp == stpmax) & (f <= ftest) & (g <= gtest)) {
 			    LOG_DEBUG("stp == stpmax");
 			    return stpmax;
 			}
-			if (stp == stpmin && (f > ftest || g <= gtest)) {
+			if ((stp == stpmin) & (f > ftest | g <= gtest)) {
 			    LOG_DEBUG("stp == stpmin");
 			    return stpmin;
 			}
@@ -164,7 +173,7 @@ namespace bnc { namespace optim { namespace lsrch {
 			}
 
 			// test for convergence
-			if (f <= ftest && std::abs(g) <= gtol*(-ginit)) {
+			if ((f <= ftest) & (std::abs(g) <= gtol*(-ginit))) {
 			    LOG_DEBUG("Converged");
 			    return stp;
 			}
@@ -172,7 +181,7 @@ namespace bnc { namespace optim { namespace lsrch {
                         // A modified function is used to predict the step during the
                         // first stage if a lower function value has been obtained but 
                         // the decrease is not sufficient.
-			if (stage == 1 && f <= fx && f > ftest) {
+			if (stage1 && f <= fx && f > ftest) {
 			    // Define the modified function and derivative values.
 			    fm  =  f - stp*gtest;
 			    fxm = fx - stx*gtest;
@@ -216,8 +225,8 @@ namespace bnc { namespace optim { namespace lsrch {
 
                         // If further progress is not possible, let stp be the best
                         // point obtained during the search.
-			if ((brackt && (stp <= stmin || stp >= stmax))
-			    || (brackt && (stmax-stmin) <= xtol*stmax)) stp = stx;
+			if ((brackt && ((stp <= stmin) || (stp >= stmax)))
+			    || (brackt && ((stmax-stmin) <= (xtol*stmax)))) stp = stx;
 			
 			// Obtain another function and derivative.
 			auto tmp = x + stp*direct;
@@ -234,7 +243,15 @@ namespace bnc { namespace optim { namespace lsrch {
 		    // local variables
 		    double gamma,p,q,r,s,sgnd,stpc,stpf,stpq,theta;
 
-		    sgnd = dp*(dx/std::abs(dx));
+		    // FORMER: sgnd = dp*(dx/std::abs(dx));
+		    if (dx < 0)
+			sgnd = -dp;
+		    else
+			sgnd = dp;
+
+		    stpf = 0;
+		    stpc = 0;
+		    stpq = 0;
 		    
                     // First case: A higher function value. The minimum is bracketed. 
                     // If the cubic step is closer to stx than the quadratic step, the 

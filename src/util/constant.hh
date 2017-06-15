@@ -8,8 +8,8 @@ namespace bnc {
     const double MISS = NaN;  // missing value
     const double INF = std::numeric_limits<double>::infinity();
     const double NEGINF = -std::numeric_limits<double>::infinity();
-    const double XTOL = 1e-30;  // min difference between x
-    const double DNTOL = 1e-30;  // diff normal tolerance
+    const double XTOL = 1e-16;  // min difference between x
+    const double DNTOL = 1e-16;  // diff normal tolerance
 }  // namespace bnc
 
 #endif /* CONSTANT_H */

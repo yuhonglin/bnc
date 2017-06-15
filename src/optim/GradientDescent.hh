@@ -31,9 +31,11 @@ namespace bnc {
 
 		Vector dx(x0.size());
 		Vector direct(x0.size());
+
 		while (true) {
 		    res.nIter++;
 		    // compute direct and bound
+		    f(res.x);
 		    direct = -g(res.x);
 		    direct.normalize();
 		    double uu  = INF;
@@ -67,9 +69,10 @@ namespace bnc {
 		    res.x += step*direct;
 		    // check convergence
 		    if (dx.norm() <= tol) {
+			g(res.x);
 			res.f = f(res.x);
 			break;
-		    }
+		    }		    
 		    // check for maxIter
 		    if (res.nIter>=maxIter) {
 			res.info = MAXITERREACHED;
