@@ -2,6 +2,7 @@
 #define GRADIENTDESCENT_H
 
 #include <cmath>
+#include <iostream>
 
 #include <util/logger.hh>
 #include <util/constant.hh>
@@ -59,14 +60,27 @@ namespace bnc {
 			    if (uu>tmp) uu = tmp;
 			}
 		    }
+		    // rescale direct
+
 
 		    uu = std::max(std::min(uu,1e15),0.);
+
 		    // search along direct
 		    double step = LS::search(f, g, res.x, direct,
 					     0., uu, (uu+0.)*0.5);
-			
 		    dx = step*direct;
 		    res.x += step*direct;
+
+		    // Safeguard res.x to avoid numerical errors
+		    // This is important because if the bounds
+		    // are violated, in the next loop, uu may be 0.
+		    for (int i=0; i<x0.size(); i++) {
+			if (res.x(i)>u(i))
+			    res.x(i) = u(i);
+			if (res.x(i)<l(i))
+			    res.x(i) = l(i);
+		    }
+		    
 		    // check convergence
 		    if (dx.norm() <= tol) {
 			g(res.x);
