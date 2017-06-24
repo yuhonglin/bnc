@@ -69,6 +69,21 @@ namespace bnc {
 					     0., uu, uu>1.? 1.:uu*.5);
 		    dx = step*direct;
 		    res.x += step*direct;
+
+		    // Safeguard res.x to avoid numerical errors
+		    // This is important because if the bounds
+		    // are violated, in the next loop, uu may be 0.
+		    for (int i=0; i<x0.size(); i++) {
+			if (res.x(i)>u(i)) {
+			    res.x(i) = u(i);
+			    continue;
+			}
+			if (res.x(i)<l(i)) {
+			    res.x(i) = l(i);
+			    continue;
+			}
+		    }
+		    
 		    // check convergence
 		    if (dx.norm() <= tol) {
 			res.f = f(res.x);
