@@ -63,7 +63,7 @@ namespace bnc {
 		    uu = std::max(std::min(uu,1e15),0.);
 		    // search along direct
 		    double step = LS::search(f, g, res.x, direct,
-					     0., uu);
+					     0., uu, (uu+0.)*0.5);
 			
 		    dx = step*direct;
 		    res.x += step*direct;

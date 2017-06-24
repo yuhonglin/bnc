@@ -85,13 +85,14 @@ namespace bnc { namespace optim { namespace lsrch {
 		static double search(T fFunc, G gFunc,
 				     const Vector& x, const Vector& direct,
 				     const double& stpmin, 
-				     const double& stpmax) {
+				     const double& stpmax,
+				     const double& init = 1.0) {
 		    // check inputs
 		    if (stpmin > stpmax || stpmin < 0) {
 			LOG_WARNING("invalid stpmax or stpmin");
 			return -1;
 		    }
-
+		    
 		    // finit = phi(0)
 		    // ginit = phi'(0)
 		    const double finit = fFunc(x);
@@ -111,6 +112,15 @@ namespace bnc { namespace optim { namespace lsrch {
 		    const double xtol = XTOL;
 		    const double p66 = .66;
 
+		    // // Check if 1.0 satisfies the Wolfe conditions
+		    // // This can make it a newton step when it is possible
+		    // if (stpmax > 1.0 &&
+		    // 	stpmin < 1.0 &&
+		    // 	fFunc(x+direct) <= finit+ftol*gFunc(x).dot(direct) &&
+		    // 	std::abs(gFunc(x+direct).dot(direct)) <=
+		    // 	gtol*std::abs(gFunc(x).dot(direct)))
+		    // 	return 1.0;
+		    
 		    bool brackt = false;
 		    bool stage1 = true;
 		    
@@ -118,7 +128,14 @@ namespace bnc { namespace optim { namespace lsrch {
 		    double width  = stpmax - stpmin;
 		    double width1 = width/p5;
 
-		    double stp    = (stpmax+stpmin)*0.5;
+		    // The initial value of stp depends on the direct
+		    // finding algorithm and the problem. For example,
+		    // For gradient descent and quadratic function,
+		    // "(stpmax+stpmin)*0.5" is better, but for Newton's
+		    // method, 1.0 is better, so it should be set by
+		    // the algorithm
+		    double stp    = init;
+		    
 		    auto tmp = x + stp*direct;
 		    double f = fFunc(tmp);
 		    double g = gFunc(tmp).dot(direct);
