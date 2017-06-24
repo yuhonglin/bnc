@@ -75,10 +75,14 @@ namespace bnc {
 		    // This is important because if the bounds
 		    // are violated, in the next loop, uu may be 0.
 		    for (int i=0; i<x0.size(); i++) {
-			if (res.x(i)>u(i))
+			if (res.x(i)>u(i)) {
 			    res.x(i) = u(i);
-			if (res.x(i)<l(i))
+			    continue;
+			}
+			if (res.x(i)<l(i)) {
 			    res.x(i) = l(i);
+			    continue;
+			}
 		    }
 		    
 		    // check convergence
