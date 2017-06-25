@@ -38,6 +38,7 @@
 #include <util/numeric.hh>
 #include <util/logger.hh>
 #include <matrix/matrix.hh>
+#include <optim/bounded.hh>
 
 
 namespace bnc { namespace optim { namespace lsrch {
@@ -66,7 +67,7 @@ namespace bnc { namespace optim { namespace lsrch {
  * returned.
  *
  */
-	    class MoreThuente
+	    class MoreThuente : public Bounded
 	    {
 	    public:
 		// the interface

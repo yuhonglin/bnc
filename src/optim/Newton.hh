@@ -70,17 +70,19 @@ namespace bnc {
 		    dx = step*direct;
 		    res.x += step*direct;
 
-		    // Safeguard res.x to avoid numerical errors
-		    // This is important because if the bounds
-		    // are violated, in the next loop, uu may be 0.
-		    for (int i=0; i<x0.size(); i++) {
-			if (res.x(i)>u(i)) {
-			    res.x(i) = u(i);
-			    continue;
-			}
-			if (res.x(i)<l(i)) {
-			    res.x(i) = l(i);
-			    continue;
+		    if (std::is_base_of<Bounded, LS>::value) {		    
+			// Safeguard res.x to avoid numerical errors
+			// This is important because if the bounds
+			// are violated, in the next loop, uu may be 0.
+			for (int i=0; i<x0.size(); i++) {
+			    if (res.x(i)>u(i)) {
+				res.x(i) = u(i);
+				continue;
+			    }
+			    if (res.x(i)<l(i)) {
+				res.x(i) = l(i);
+				continue;
+			    }
 			}
 		    }
 		    
