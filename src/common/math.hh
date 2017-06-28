@@ -162,6 +162,14 @@ namespace bnc {
 	}
 	return ret;
     }
-}
+
+    // imitate the cov2cor function in R
+    Matrix cov2cor(const Matrix &m) {
+	Vector is = 1./m.diagonal().array().sqrt();
+	return (m.array().rowwise()*is.transpose().array()).array().colwise()*is.array();
+    }
+
+    
+} // namespace bnc
 
 #endif /* MATH_H */
