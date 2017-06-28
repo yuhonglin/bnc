@@ -1,5 +1,5 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef COMMON_MATH_H
+#define COMMON_MATH_H
 
 #include <cmath>
 
@@ -164,12 +164,12 @@ namespace bnc {
     }
 
     // imitate the cov2cor function in R
-    Matrix cov2cor(const Matrix &m) {
-	Vector is = 1./m.diagonal().array().sqrt();
-	return (m.array().rowwise()*is.transpose().array()).array().colwise()*is.array();
-    }
+    // Matrix cov2cor(const Matrix &m) {
+    // 	Vector is = 1./m.diagonal().array().sqrt();
+    // 	return (m.array().rowwise()*is.transpose().array()).array().colwise()*is.array();
+    // }
 
     
 } // namespace bnc
 
-#endif /* MATH_H */
+#endif /* COMMON_MATH_H */

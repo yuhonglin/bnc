@@ -163,6 +163,7 @@ namespace bnc {
 
     // P functions, based on mvt.hh
     // Notice that the input matrix is correlations matrix
+    // Use this inferface for speed
     template <class RNGType>
     double pmvnorm(Mvt& mvt, Vector &lower, Vector &upper, Vector &mean,
 		   Matrix &corr, RNGType *rng, double& error, int &inform) {
@@ -180,6 +181,7 @@ namespace bnc {
 	return mvt.mvt(l, u, df, corr, m, error, inform, rng);
     }
 
+    // Use this inferface for convenience
     template <class RNGType>
     double pmvnorm(Vector &lower, Vector &upper, Vector &mean,
 		   Matrix &corr, RNGType *rng, double& error, int &inform) {
@@ -198,6 +200,22 @@ namespace bnc {
 	return mvt.mvt(l, u, df, corr, m, error, inform, rng);
     }
 
+    // If error and inform are not needed
+    template <class RNGType>
+    double pmvnorm(Mvt& mvt, Vector &lower, Vector &upper, Vector &mean,
+		   Matrix &corr, RNGType *rng) {
+	double error;
+	int inform;
+	return pmvnorm(mvt, lower, upper, mean, corr, rng, error, inform);
+    }
+
+    template <class RNGType>
+    double pmvnorm(Vector &lower, Vector &upper, Vector &mean,
+		   Matrix &corr, RNGType *rng) {
+	double error;
+	int inform;
+	return pmvnorm(lower, upper, mean, corr, rng, error, inform);
+    }
     
 }  // namespace bnc
 
