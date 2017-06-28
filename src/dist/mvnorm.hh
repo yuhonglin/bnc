@@ -164,6 +164,23 @@ namespace bnc {
     // P functions, based on mvt.hh
     // Notice that the input matrix is correlations matrix
     template <class RNGType>
+    double pmvnorm(Mvt& mvt, Vector &lower, Vector &upper, Vector &mean,
+		   Matrix &corr, RNGType *rng, double& error, int &inform) {
+
+	if (!(corr.diagonal().array()==1).all()) {
+	    // not correlation matrix
+	    LOG_WARNING("Input corr matrix' diagonal is not all one");
+	}
+	
+	Vector l = lower - mean;
+	Vector u = upper - mean;
+	Vector m = Vector::Constant(l.size(), 0.);
+	
+	int df = 0;
+	return mvt.mvt(l, u, df, corr, m, error, inform, rng);
+    }
+
+    template <class RNGType>
     double pmvnorm(Vector &lower, Vector &upper, Vector &mean,
 		   Matrix &corr, RNGType *rng, double& error, int &inform) {
 
@@ -177,8 +194,10 @@ namespace bnc {
 	Vector m = Vector::Constant(l.size(), 0.);
 	
 	int df = 0;
-	return mvt::mvt(l, u, df, corr, m, error, inform, rng);
+	Mvt mvt;
+	return mvt.mvt(l, u, df, corr, m, error, inform, rng);
     }
+
     
 }  // namespace bnc
 

@@ -27,8 +27,87 @@ extern "C" {
 }
 
 namespace bnc {
-    namespace mvt {
+    /* 
+     *  I decide to wrap the mvt functions into a 
+     *  class because there lots of static arrays used
+     *  in these functions. This will make multi thread
+     *  not available.
+     */
+    class Mvt {
+	// The member variables are prefixed by the functions that uses it.
 
+	// function mvsubr_0_
+	double *mvsubr_0_a;
+	double *mvsubr_0_b;
+	double mvsubr_0_r__;
+	double *mvsubr_0_y;
+	double mvsubr_0_di;
+	double mvsubr_0_ei;
+	double *mvsubr_0_dl;
+	double *mvsubr_0_cov;
+	int *mvsubr_0_infi;
+	int mvsubr_0_nu;
+	int mvsubr_0_ny;
+	double mvsubr_0_snu;
+
+	// function mvspcl_
+	double mvspcl_r__;
+
+	// function mvvlsb_
+
+	// function mvsort_
+
+	// function mvkbrv_
+	double *mvkbrv_r__;
+	double *mvkbrv_x;
+	double *mvkbrv_fs;
+	int mvkbrv_np;
+	double *mvkbrv_vk;
+	int *mvkbrv_pr;
+	double *mvkbrv_finval;
+	int mvkbrv_sampls;
+	double *mvkbrv_values;
+	double *mvkbrv_varest;
+	double *mvkbrv_varsqr;
+	
+    public:
+	friend int mvsubr_(int *n, double *w, int *nf, 
+			   double *f);
+	Mvt() {
+	    mvsubr_0_a = new double[1000];
+	    mvsubr_0_b = new double[1000];
+	    mvsubr_0_y = new double[1000];
+	    mvsubr_0_dl = new double[1000];
+	    mvsubr_0_cov = new double[500500];
+	    mvsubr_0_infi = new int[1000];
+
+	    mvkbrv_r__ = new double[1000];
+	    mvkbrv_x   = new double[1000];
+	    mvkbrv_fs  = new double[5000];
+	    mvkbrv_vk  = new double[1000];
+	    mvkbrv_pr  = new int[1000];
+	    mvkbrv_finval = new double[5000];
+	    mvkbrv_values = new double[5000];
+	    mvkbrv_varest = new double[5000];
+	    mvkbrv_varsqr = new double[5000];
+	}
+
+	template <class T>
+	inline void safedelete(T* p) {
+	    if (p!=NULL)
+		delete[] p;
+	}
+	
+	~Mvt() {
+	    safedelete(mvsubr_0_a);
+	    safedelete(mvsubr_0_b);
+	    safedelete(mvsubr_0_y);
+	    safedelete(mvsubr_0_dl);
+	    safedelete(mvsubr_0_cov);
+	    safedelete(mvsubr_0_infi);
+	}
+	
+	
 	// src: www.netlib.org/clapack/CLAPACK-3.1.1/F2CLIBS/libf2c/pow_dd.c
 	double pow_dd(double *ap, double *bp)
 	{
@@ -102,85 +181,14 @@ namespace bnc {
 	double c_b29 = 2.;
 	int c__100 = 100;
 
-	/* forward declaration */
-	template<class RNGType>
-	inline double mvuni_(RNGType *rng);
-    
-	template <class FuncType, class RNGType>
-	int mvkrsv_(int *ndim, int *kl, double *values, 
-			 int *prime, double *vk, int *nf, FuncType funsub, double *
-			 x, double *r__, int *pr, double *fs, RNGType *rng);
-    
-	template <class FuncType, class RNGType>
-	int mvkbrv_(int *ndim, int *minvls, int *maxvls, 
-			 int *nf, FuncType funsub, double *abseps, double *releps, 
-			 double *abserr, double *finest, int *inform__, RNGType *rng);
+	/* Subroutine */ int mvsubr_(int *n, double *w, int *nf, 
+					  double *f)
+	{
+	    return mvsubr_0_(0, n, w, nf, f, (int *)0, (double *)0, (
+				 double *)0, (double *)0, (double *)0, (int *)0, (
+				     int *)0, (double *)0, (double *)0, (int *)0);
+	}
 
-	double mvchnv_(int *n, double *p);
-
-	double mvbvtl_(int *nu, double *dh, double *dk, double * r__);
-
-	double mvbvtc_(int *nu, double *l, double *u, int *infin, 
-		       double *rho);
-    
-	double mvbvt_(int *nu, double *lower, double *upper, int *
-		      infin, double *correl);
-
-	double mvstdt_(int *nu, double *t);
-
-	double mvbvu_(double *sh, double *sk, double *r__);
-
-	double mvbvn_(double *lower, double *upper, int *infin, 
-		      double *correl);
-    
-	double mvphnv_(double *p);
-
-	double mvphi_(double *z__);
-
-	int mvswap_(int *p, int *q, double *a, double *b, double *d__, int *infin, int *n, 
-			 double *c__);
-
-	int mvsswp_(double *x, double *y);
-
-	int mvlims_(double *a, double *b, int *infin, 
-			 double *lower, double *upper);
-
-	double mvtdns_(int *nu, double *x);
-
-	int mvsort_(int *n, double *lower, double *upper,
-			 double *delta, double *correl, int *infin, double *y,
-			 int *pivot, int *nd, double *a, double *b, 
-			 double *dl, double *cov, int *infi, int *inform__);
-    
-	int mvvlsb_(int *n, double *w, double *r__, 
-			 double *dl, int *infi, double *a, double *b, 
-			 double *cov, double *y, double *di, double *ei, 
-			 int *nd, double *value);
-
-	int mvspcl_(int *nd, int *nu, double *a, 
-			 double *b, double *dl, double *cov, int *infi, 
-			 double *snu, double *vl, double *er, int *inform__);
-
-	int mvints_(int *n, int *nuin, double *correl, 
-			 double *lower, double *upper, double *delta, int *
-			 infin, int *nd, double *vl, double *er, int *inform__);
-
-	int mvsubr_(int *n, double *w, int *nf, 
-			 double *f);
-
-	int mvsubr_0_(int n__, int *n, double *w, int *
-			   nf, double *f, int *nuin, double *correl, double *
-			   lower, double *upper, double *delta, int *infin, int *
-			   nd, double *vl, double *er, int *inform__);
-
-	template <class RNGType>
-	int mvtdst_(int *n, int *nu, double *lower, 
-			 double *upper, int *infin, double *correl, double *
-			 delta, int *maxpts, double *abseps, double *releps, 
-			 double *error, double *value, int *inform__, RNGType *rng);
-    
-      
-    
 	/*    $Id: mvt.f 297 2014-12-16 17:24:38Z thothorn $ */
 
 	template <class RNGType>
@@ -264,7 +272,7 @@ namespace bnc {
 
 		    /*           Call the lattice rule integration subroutine */
 	  
-		    mvkbrv_(&nd, &ivls, maxpts, &c__1, mvsubr_, abseps,
+		    mvkbrv_(&nd, &ivls, maxpts, &c__1, abseps,
 			    releps, e, v, inform__, rng);
 		    *error = e[0];
 		    *value = v[0];
@@ -283,10 +291,6 @@ namespace bnc {
 	    int i__1;
 
 	    /* Local variables */
-	    static double a[1000], b[1000], r__, y[1000], di, ei, dl[1000];
-	    static int nu, ny;
-	    static double cov[500500], snu;
-	    static int infi[1000];
 
 	    /*     Integrand subroutine */
 
@@ -318,14 +322,14 @@ namespace bnc {
 	    case 1: goto L_mvints;
 	    }
 
-	    if (nu <= 0) {
-		r__ = 1.;
+	    if (mvsubr_0_nu <= 0) {
+		mvsubr_0_r__ = 1.;
 		i__1 = *n + 1;
-		mvvlsb_(&i__1, &w[1], &r__, dl, infi, a, b, cov, y, &di, &ei, &ny, &f[
+		mvvlsb_(&i__1, &w[1], &mvsubr_0_r__, mvsubr_0_dl, mvsubr_0_infi, mvsubr_0_a, mvsubr_0_b, mvsubr_0_cov, mvsubr_0_y, &mvsubr_0_di, &mvsubr_0_ei, &mvsubr_0_ny, &f[
 			    1]);
 	    } else {
-		r__ = mvchnv_(&nu, &w[*n]) / snu;
-		mvvlsb_(n, &w[1], &r__, dl, infi, a, b, cov, y, &di, &ei, &ny, &f[1]);
+		mvsubr_0_r__ = mvchnv_(&mvsubr_0_nu, &w[*n]) / mvsubr_0_snu;
+		mvvlsb_(n, &w[1], &mvsubr_0_r__, mvsubr_0_dl, mvsubr_0_infi, mvsubr_0_a, mvsubr_0_b, mvsubr_0_cov, mvsubr_0_y, &mvsubr_0_di, &mvsubr_0_ei, &mvsubr_0_ny, &f[1]);
 	    }
 	    return 0;
 
@@ -336,20 +340,12 @@ namespace bnc {
 
 	    /*     Initialization and computation of covariance Cholesky factor. */
 
-	    mvsort_(n, &lower[1], &upper[1], &delta[1], &correl[1], &infin[1], y, &
-		    c_true, nd, a, b, dl, cov, infi, inform__);
-	    nu = *nuin;
-	    mvspcl_(nd, &nu, a, b, dl, cov, infi, &snu, vl, er, inform__);
+	    mvsort_(n, &lower[1], &upper[1], &delta[1], &correl[1], &infin[1], mvsubr_0_y, &
+		    c_true, nd, mvsubr_0_a, mvsubr_0_b, mvsubr_0_dl, mvsubr_0_cov, mvsubr_0_infi, inform__);
+	    mvsubr_0_nu = *nuin;
+	    mvspcl_(nd, &mvsubr_0_nu, mvsubr_0_a, mvsubr_0_b, mvsubr_0_dl, mvsubr_0_cov, mvsubr_0_infi, &mvsubr_0_snu, vl, er, inform__);
 	    return 0;
 	} /* mvsubr_ */
-
-	/* Subroutine */ int mvsubr_(int *n, double *w, int *nf, 
-					  double *f)
-	{
-	    return mvsubr_0_(0, n, w, nf, f, (int *)0, (double *)0, (
-				 double *)0, (double *)0, (double *)0, (int *)0, (
-				     int *)0, (double *)0, (double *)0, (int *)0);
-	}
 
 	/* Subroutine */ int mvints_(int *n, int *nuin, double *correl, 
 					  double *lower, double *upper, double *delta, int *
@@ -368,7 +364,6 @@ namespace bnc {
 	    double d__1;
 
 	    /* Local variables */
-	    static double r__;
 
 	    /*     Special cases subroutine */
 
@@ -432,14 +427,14 @@ namespace bnc {
 
 			/* Computing 2nd power */
 			d__1 = cov[2];
-			r__ = std::sqrt(d__1 * d__1 + 1);
+			mvspcl_r__ = std::sqrt(d__1 * d__1 + 1);
 			if (infi[2] != 0) {
-			    a[2] /= r__;
+			    a[2] /= mvspcl_r__;
 			}
 			if (infi[2] != 1) {
-			    b[2] /= r__;
+			    b[2] /= mvspcl_r__;
 			}
-			cov[2] /= r__;
+			cov[2] /= mvspcl_r__;
 			*vl = mvbvt_(nu, &a[1], &b[1], &infi[1], &cov[2]);
 			*er = 1e-15;
 		    } else {
@@ -503,11 +498,14 @@ namespace bnc {
 	    double d__1, d__2;
 
 	    /* Local variables */
-	    static int i__, j;
-	    static double ai, bi;
-	    static int ij;
-	    static double sum;
-	    static int infa, infb;
+	    int mvvlsb_i__;
+	    int mvvlsb_j;
+	    double mvvlsb_ai;
+	    double mvvlsb_bi;
+	    int mvvlsb_ij;
+	    double mvvlsb_sum;
+	    int mvvlsb_infa;
+	    int mvvlsb_infb;
 
 	    /*     Integrand subroutine */
 
@@ -522,56 +520,56 @@ namespace bnc {
 
 	    /* Function Body */
 	    *value = 1.;
-	    infa = 0;
-	    infb = 0;
+	    mvvlsb_infa = 0;
+	    mvvlsb_infb = 0;
 	    *nd = 0;
-	    ij = 0;
+	    mvvlsb_ij = 0;
 	    i__1 = *n;
-	    for (i__ = 1; i__ <= i__1; ++i__) {
-		sum = dl[i__];
-		i__2 = i__ - 1;
-		for (j = 1; j <= i__2; ++j) {
-		    ++ij;
-		    if (j <= *nd) {
-			sum += cov[ij] * y[j];
+	    for (mvvlsb_i__ = 1; mvvlsb_i__ <= i__1; ++mvvlsb_i__) {
+		mvvlsb_sum = dl[mvvlsb_i__];
+		i__2 = mvvlsb_i__ - 1;
+		for (mvvlsb_j = 1; mvvlsb_j <= i__2; ++mvvlsb_j) {
+		    ++mvvlsb_ij;
+		    if (mvvlsb_j <= *nd) {
+			mvvlsb_sum += cov[mvvlsb_ij] * y[mvvlsb_j];
 		    }
 		}
-		if (infi[i__] != 0) {
-		    if (infa == 1) {
+		if (infi[mvvlsb_i__] != 0) {
+		    if (mvvlsb_infa == 1) {
 			/* Computing MAX */
-			d__1 = ai, d__2 = *r__ * a[i__] - sum;
-			ai = std::max(d__1,d__2);
+			d__1 = mvvlsb_ai, d__2 = *r__ * a[mvvlsb_i__] - mvvlsb_sum;
+			mvvlsb_ai = std::max(d__1,d__2);
 		    } else {
-			ai = *r__ * a[i__] - sum;
-			infa = 1;
+			mvvlsb_ai = *r__ * a[mvvlsb_i__] - mvvlsb_sum;
+			mvvlsb_infa = 1;
 		    }
 		}
-		if (infi[i__] != 1) {
-		    if (infb == 1) {
+		if (infi[mvvlsb_i__] != 1) {
+		    if (mvvlsb_infb == 1) {
 			/* Computing MIN */
-			d__1 = bi, d__2 = *r__ * b[i__] - sum;
-			bi = std::min(d__1,d__2);
+			d__1 = mvvlsb_bi, d__2 = *r__ * b[mvvlsb_i__] - mvvlsb_sum;
+			mvvlsb_bi = std::min(d__1,d__2);
 		    } else {
-			bi = *r__ * b[i__] - sum;
-			infb = 1;
+			mvvlsb_bi = *r__ * b[mvvlsb_i__] - mvvlsb_sum;
+			mvvlsb_infb = 1;
 		    }
 		}
-		++ij;
-		if (i__ == *n || cov[ij + *nd + 2] > 0.) {
-		    i__2 = infa + infa + infb - 1;
-		    mvlims_(&ai, &bi, &i__2, di, ei);
+		++mvvlsb_ij;
+		if (mvvlsb_i__ == *n || cov[mvvlsb_ij + *nd + 2] > 0.) {
+		    i__2 = mvvlsb_infa + mvvlsb_infa + mvvlsb_infb - 1;
+		    mvlims_(&mvvlsb_ai, &mvvlsb_bi, &i__2, di, ei);
 		    if (*di >= *ei) {
 			*value = 0.;
 			return 0;
 		    } else {
 			*value *= *ei - *di;
 			++(*nd);
-			if (i__ < *n) {
+			if (mvvlsb_i__ < *n) {
 			    d__1 = *di + w[*nd] * (*ei - *di);
 			    y[*nd] = mvphnv_(&d__1);
 			}
-			infa = 0;
-			infb = 0;
+			mvvlsb_infa = 0;
+			mvvlsb_infb = 0;
 		    }
 		}
 	    }
@@ -589,13 +587,13 @@ namespace bnc {
 	    double d__1;
 
 	    /* Local variables */
-	    static double d__, e;
-	    static int i__, j, k, l, m;
-	    static double aj, bj;
-	    static int ii, ij, il, jl;
-	    static double sum, amin, bmin;
-	    static int jmin;
-	    static double epsi, demin, sumsq, cvdiag;
+	    double d__, e;
+	    int i__, j, k, l, m;
+	    double aj, bj;
+	    int ii, ij, il, jl;
+	    double sum, amin, bmin;
+	    int jmin;
+	    double epsi, demin, sumsq, cvdiag;
 
 	    /*     Subroutine to sort integration limits and determine Cholesky factor. */
 
@@ -830,8 +828,8 @@ namespace bnc {
 	    double ret_val, d__1;
 
 	    /* Local variables */
-	    static int i__;
-	    static double prod;
+	    int i__;
+	    double prod;
 
 	    ret_val = 0.;
 	    if (*nu > 0) {
@@ -859,7 +857,6 @@ namespace bnc {
 	/* Subroutine */ int mvlims_(double *a, double *b, int *infin, 
 					  double *lower, double *upper)
 	{
-	    extern double mvphi_(double *);
 
 	    *lower = 0.;
 	    *upper = 1.;
@@ -878,7 +875,7 @@ namespace bnc {
 
 	/* Subroutine */ int mvsswp_(double *x, double *y)
 	{
-	    static double t;
+	    double t;
 
 	    t = *x;
 	    *x = *y;
@@ -895,7 +892,7 @@ namespace bnc {
 	    int i__1;
 
 	    /* Local variables */
-	    static int i__, j, ii, jj;
+	    int i__, j, ii, jj;
 
 	    /*     Swaps rows and columns P and Q in situ, with P <= Q. */
 
@@ -940,7 +937,7 @@ namespace bnc {
 	{
 	    /* Initialized data */
 
-	    static double a[44] = { .610143081923200417926465815756,
+	    static const double a[44] = { .610143081923200417926465815756,
 				    -.434841272712577471828182820888,.176351193643605501125840298123,
 				    -.060710795609249414860051215825,.017712068995694114486147141191,
 				    -.004321119385567293818599864968,8.54216676887098678819832055e-4,
@@ -962,9 +959,9 @@ namespace bnc {
 	    double ret_val;
 
 	    /* Local variables */
-	    static double b;
-	    static int i__;
-	    static double p, t, bm, bp, xa;
+	    double b;
+	    int i__;
+	    double p, t, bm, bp, xa;
 
 
 	    /*     Normal distribution probabilities accurate to 1d-15. */
@@ -999,7 +996,7 @@ namespace bnc {
 	    double ret_val, d__1, d__2;
 
 	    /* Local variables */
-	    static double q, r__;
+	    double q, r__;
 
 
 	    /* 	ALGORITHM AS241  APPL. STATIST. (1988) VOL. 37, NO. 3 */
@@ -1088,8 +1085,6 @@ namespace bnc {
 	    double ret_val, d__1, d__2, d__3, d__4;
 
 	    /* Local variables */
-	    extern double mvbvu_(double *, double *, double *);
-
 
 	    /*     A function for computing bivariate normal probabilities. */
 
@@ -1155,7 +1150,7 @@ namespace bnc {
 	{
 	    /* Initialized data */
 
-	    static struct {
+	    static const struct {
 		double e_1[3];
 		double fill_2[7];
 		double e_3[6];
@@ -1171,7 +1166,7 @@ namespace bnc {
 
 #define w ((double *)&equiv_83)
 
-	    static struct {
+	    static const struct {
 		double e_1[3];
 		double fill_2[7];
 		double e_3[6];
@@ -1193,13 +1188,13 @@ namespace bnc {
 	    double ret_val, d__1, d__2;
 
 	    /* Local variables */
-	    static double a, b, c__, d__, h__;
-	    static int i__;
-	    static double k;
-	    static int lg;
-	    static double as;
-	    static int ng;
-	    static double bs, hk, hs, sn, rs, xs, bvn, asr;
+	    double a, b, c__, d__, h__;
+	    int i__;
+	    double k;
+	    int lg;
+	    double as;
+	    int ng;
+	    double bs, hk, hs, sn, rs, xs, bvn, asr;
 
 	    /*     A function for computing bivariate normal probabilities; */
 	    /*       developed using */
@@ -1329,9 +1324,9 @@ namespace bnc {
 	    double ret_val;
 
 	    /* Local variables */
-	    static int j;
-	    static double rn, ts, tt, csthe, snthe;
-	    static double polyn;
+	    int j;
+	    double rn, ts, tt, csthe, snthe;
+	    double polyn;
 
 
 	    /*     Student t Distribution Function */
@@ -1377,10 +1372,6 @@ namespace bnc {
 	    double ret_val, d__1, d__2, d__3, d__4;
 
 	    /* Local variables */
-	    extern double mvbvn_(double *, double *, int *, 
-				 double *), mvbvtl_(int *, double *, double *, 
-						    double *);
-
 
 	    /*     A function for computing bivariate normal and t probabilities. */
 
@@ -1458,10 +1449,10 @@ namespace bnc {
 	    double ret_val;
 
 	    /* Local variables */
-	    static double b;
-	    static int i__;
-	    static double lw[2], up[2];
-	    static int inf[2];
+	    double b;
+	    int i__;
+	    double lw[2], up[2];
+	    int inf[2];
 
 	    /*     A function for computing complementary bivariate normal and t */
 	    /*       probabilities. */
@@ -1527,8 +1518,8 @@ namespace bnc {
 	    double ret_val, d__1, d__2, d__3;
 
 	    /* Local variables */
-	    static int j, hs, ks;
-	    static double hkn, hpk, hrk, krh, bvt, ors, snu, gmph, gmpk, hkrn, 
+	    int j, hs, ks;
+	    double hkn, hpk, hrk, krh, bvt, ors, snu, gmph, gmpk, hkrn, 
 		qhrk, xnkh, xnhk, btnckh, btnchk, btpdkh, btpdhk;
 
 
@@ -1670,7 +1661,7 @@ namespace bnc {
 	    double ret_val;
 
 	    /* Local variables */
-	    static double x;
+	    double x;
 
 	    /*                  MVCHNV */
 	    /*     P =  1 - K  I     exp(-t*t/2) t**(N-1) dt, for N >= 1. */
@@ -1680,18 +1671,17 @@ namespace bnc {
 	    ret_val = x;
 	    return ret_val;
 	} /* mvchnv_ */
-
-	template <class FuncType, class RNGType>
+	template <class RNGType>
 	/* Subroutine */ int mvkbrv_(int *ndim, int *minvls, int *maxvls, 
-					  int *nf, FuncType funsub, double *abseps, double *releps, 
+					  int *nf, double *abseps, double *releps, 
 					  double *abserr, double *finest, int *inform__, RNGType *rng)
 	{
 	    /* Initialized data */
 
-	    static int p[28] = { 31,47,73,113,173,263,397,593,907,1361,2053,3079,
+	    static const int p[28] = { 31,47,73,113,173,263,397,593,907,1361,2053,3079,
 				      4621,6947,10427,15641,23473,35221,52837,79259,118891,178349,
 				      267523,401287,601943,902933,1354471,2031713 };
-	    static int c__[2772] = { 12,13,27,35,64,111,163,
+	    static const int c__[2772] = { 12,13,27,35,64,111,163,
 					  246,347,505,794,1189,1763,2872,4309,6610,9861,10327,19540,34566,
 					  31929,40701,103650,165843,130365,333459,500884,858339,9,11,28,27,
 					  66,42,154,189,402,220,325,888,1018,3233,3758,6977,3647,7582,19926,
@@ -1899,15 +1889,10 @@ namespace bnc {
 	    double d__1, d__2, d__3;
 
 	    /* Local variables */
-	    static int i__, k;
-	    static double r__[1000], x[1000], fs[5000];
-	    static int np;
-	    static double vk[1000];
-	    static int pr[1000], kmx;
-	    static double difint, finval[5000], varprd;
-	    static int sampls;
-	    static double values[5000], varest[5000], varsqr[5000];
-	    static int intvls;
+	    int i__, k;
+	    int kmx;
+	    double difint, varprd;
+	    int intvls;
 
 
 	    /*  Automatic Multidimensional Integration Subroutine */
@@ -1977,87 +1962,87 @@ namespace bnc {
 		i__1 = *nf;
 		for (k = 1; k <= i__1; ++k) {
 		    finest[k] = 0.;
-		    varest[k - 1] = 0.;
+		    mvkbrv_varest[k - 1] = 0.;
 		}
-		sampls = 8;
+		mvkbrv_sampls = 8;
 		for (i__ = std::min(*ndim,10); i__ <= 28; ++i__) {
-		    np = i__;
-		    if (*minvls < (sampls << 1) * p[i__ - 1]) {
+		    mvkbrv_np = i__;
+		    if (*minvls < (mvkbrv_sampls << 1) * p[i__ - 1]) {
 			goto L10;
 		    }
 		}
 		/* Computing MAX */
-		i__1 = 8, i__2 = *minvls / (p[np - 1] << 1);
-		sampls = std::max(i__1,i__2);
+		i__1 = 8, i__2 = *minvls / (p[mvkbrv_np - 1] << 1);
+		mvkbrv_sampls = std::max(i__1,i__2);
 	    }
 	L10:
-	    vk[0] = 1. / p[np - 1];
+	    mvkbrv_vk[0] = 1. / p[mvkbrv_np - 1];
 	    k = 1;
 	    i__1 = *ndim;
 	    for (i__ = 2; i__ <= i__1; ++i__) {
 		if (i__ <= 100) {
 		    /* Computing MIN */
 		    i__2 = *ndim - 1;
-		    d__1 = c__[np + std::min(i__2,99) * 28 - 29] * (double) k;
-		    d__2 = (double) p[np - 1];
+		    d__1 = c__[mvkbrv_np + std::min(i__2,99) * 28 - 29] * (double) k;
+		    d__2 = (double) p[mvkbrv_np - 1];
 		    k = (int) d_mod(&d__1, &d__2);
-		    vk[i__ - 1] = k * vk[0];
+		    mvkbrv_vk[i__ - 1] = k * mvkbrv_vk[0];
 		} else {
 		    d__1 = (double) (i__ - 100) / (*ndim - 99);
-		    vk[i__ - 1] = (double) ((int) (p[np - 1] * pow_dd(&c_b29, 
+		    mvkbrv_vk[i__ - 1] = (double) ((int) (p[mvkbrv_np - 1] * pow_dd(&c_b29, 
 									   &d__1)));
-		    d__1 = vk[i__ - 1] / p[np - 1];
-		    vk[i__ - 1] = d_mod(&d__1, &c_b24);
+		    d__1 = mvkbrv_vk[i__ - 1] / p[mvkbrv_np - 1];
+		    mvkbrv_vk[i__ - 1] = d_mod(&d__1, &c_b24);
 		}
 	    }
 	    i__1 = *nf;
 	    for (k = 1; k <= i__1; ++k) {
-		finval[k - 1] = 0.;
-		varsqr[k - 1] = 0.;
+		mvkbrv_finval[k - 1] = 0.;
+		mvkbrv_varsqr[k - 1] = 0.;
 	    }
 
-	    i__1 = sampls;
+	    i__1 = mvkbrv_sampls;
 	    for (i__ = 1; i__ <= i__1; ++i__) {
-		mvkrsv_(ndim, &c__100, values, &p[np - 1], vk, nf, funsub, x, 
-			r__, pr, fs, rng);
+		mvkrsv_(ndim, &c__100, mvkbrv_values, &p[mvkbrv_np - 1], mvkbrv_vk, nf, mvkbrv_x, 
+			mvkbrv_r__, mvkbrv_pr, mvkbrv_fs, rng);
 		i__2 = *nf;
 		for (k = 1; k <= i__2; ++k) {
-		    difint = (values[k - 1] - finval[k - 1]) / i__;
-		    finval[k - 1] += difint;
+		    difint = (mvkbrv_values[k - 1] - mvkbrv_finval[k - 1]) / i__;
+		    mvkbrv_finval[k - 1] += difint;
 		    /* Computing 2nd power */
 		    d__1 = difint;
-		    varsqr[k - 1] = (i__ - 2) * varsqr[k - 1] / i__ + d__1 * d__1;
+		    mvkbrv_varsqr[k - 1] = (i__ - 2) * mvkbrv_varsqr[k - 1] / i__ + d__1 * d__1;
 		}
 	    }
 
-	    intvls += (sampls << 1) * p[np - 1];
+	    intvls += (mvkbrv_sampls << 1) * p[mvkbrv_np - 1];
 	    kmx = 1;
 	    i__1 = *nf;
 
 	    for (k = 1; k <= i__1; ++k) {
-		varprd = varest[k - 1] * varsqr[k - 1];
-		finest[k] += (finval[k - 1] - finest[k]) / (varprd + 1);
-		if (varsqr[k - 1] > 0.) {
-		    varest[k - 1] = (varprd + 1) / varsqr[k - 1];
+		varprd = mvkbrv_varest[k - 1] * mvkbrv_varsqr[k - 1];
+		finest[k] += (mvkbrv_finval[k - 1] - finest[k]) / (varprd + 1);
+		if (mvkbrv_varsqr[k - 1] > 0.) {
+		    mvkbrv_varest[k - 1] = (varprd + 1) / mvkbrv_varsqr[k - 1];
 		}
 		if ((d__1 = finest[k], std::abs(d__1)) > (d__2 = finest[kmx], std::abs(d__2))) {
 		    kmx = k;
 		}
 	    }
-	    *abserr = std::sqrt(varsqr[kmx - 1] / (varprd + 1)) * 7 / 2;
+	    *abserr = std::sqrt(mvkbrv_varsqr[kmx - 1] / (varprd + 1)) * 7 / 2;
 	    /* Computing MAX */
 	    d__2 = *abseps, d__3 = (d__1 = finest[kmx], std::abs(d__1)) * *releps;
 	    if (*abserr > std::max(d__2,d__3)) {
-		if (np < 28) {
-		    ++np;
+		if (mvkbrv_np < 28) {
+		    ++mvkbrv_np;
 		} else {
 		    /* Computing MIN */
-		    i__1 = sampls * 3 / 2, i__2 = (*maxvls - intvls) / (p[np - 1] << 
+		    i__1 = mvkbrv_sampls * 3 / 2, i__2 = (*maxvls - intvls) / (p[mvkbrv_np - 1] << 
 									1);
-		    sampls = std::min(i__1,i__2);
-		    sampls = std::max(8,sampls);
+		    mvkbrv_sampls = std::min(i__1,i__2);
+		    mvkbrv_sampls = std::max(8,mvkbrv_sampls);
 		}
-		if (intvls + (sampls << 1) * p[np - 1] <= *maxvls) {
+		if (intvls + (mvkbrv_sampls << 1) * p[mvkbrv_np - 1] <= *maxvls) {
 		    goto L10;
 		}
 	    } else {
@@ -2071,9 +2056,9 @@ namespace bnc {
 	    return 0;
 	} /* mvkbrv_ */
 
-	template <class FuncType, class RNGType>
+	template <class RNGType>
 	/* Subroutine */ int mvkrsv_(int *ndim, int *kl, double *values, 
-					  int *prime, double *vk, int *nf, FuncType funsub, double *
+					  const int *prime, double *vk, int *nf, double *
 					  x, double *r__, int *pr, double *fs, RNGType *rng)
 	{
 	    /* System generated locals */
@@ -2081,7 +2066,7 @@ namespace bnc {
 	    double d__1;
 
 	    /* Local variables */
-	    static int j, k, jp;
+	    int j, k, jp;
 
 	    /*     For lattice rule sums */
 
@@ -2127,7 +2112,7 @@ namespace bnc {
 		    }
 		    x[j] = (d__1 = r__[j] * 2 - 1, std::abs(d__1));
 		}
-		(*funsub)(ndim, &x[1], nf, &fs[1]);
+		mvsubr_(ndim, &x[1], nf, &fs[1]);
 		i__2 = *nf;
 		for (j = 1; j <= i__2; ++j) {
 		    values[j] += (fs[j] - values[j]) / ((k << 1) - 1);
@@ -2136,7 +2121,7 @@ namespace bnc {
 		for (j = 1; j <= i__2; ++j) {
 		    x[j] = 1 - x[j];
 		}
-		(*funsub)(ndim, &x[1], nf, &fs[1]);
+		mvsubr_(ndim, &x[1], nf, &fs[1]);
 		i__2 = *nf;
 		for (j = 1; j <= i__2; ++j) {
 		    values[j] += (fs[j] - values[j]) / (k << 1);
@@ -2207,8 +2192,9 @@ namespace bnc {
 
 	    return value;
 	} // function mvt
-
-    }  // namespace mvt
+	
+    };  // class Mvt
+    
 }  // namespace bnc
 
 #endif /* MVT_H */
