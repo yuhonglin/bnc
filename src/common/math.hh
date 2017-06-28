@@ -27,14 +27,14 @@ namespace bnc {
     };
     
     inline double fmin2(const double& x, const double& y) {
-	if (isnan(x) || isnan(y))
+	if (std::isnan(x) || std::isnan(y))
 	    return x + y;
 	return (x < y) ? x : y;
     }
 
     inline double fmax2(const double& x, const double& y)
     {
-	if (isnan(x) || isnan(y))
+	if (std::isnan(x) || std::isnan(y))
 	    return x + y;
 	return (x < y) ? y : x;
     }
@@ -51,9 +51,9 @@ namespace bnc {
 
     inline double fsign(const double &x, const double &y)
     {
-	if (isnan(x) || isnan(y))
+	if (std::isnan(x) || std::isnan(y))
 	    return x + y;
-	return ((y >= 0) ? fabs(x) : -fabs(x));
+	return ((y >= 0) ? std::fabs(x) : -std::fabs(x));
     }
 
     /**
