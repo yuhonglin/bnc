@@ -14,7 +14,7 @@
 #include <matrix/matrix.hh>
 #include <dist/norm.hh>
 #include <dist/dist.hh>
-
+#include <dist/mvt.hh>
 
 namespace bnc {
 
@@ -161,6 +161,24 @@ namespace bnc {
 	
     }
 
+    // P functions, based on mvt.hh
+    // Notice that the input matrix is correlations matrix
+    template <class RNGType>
+    double pmvnorm(Vector &lower, Vector &upper, Vector &mean,
+		   Matrix &corr, RNGType *rng, double& error, int &inform) {
+
+	if (!(corr.diagonal().array()==1).all()) {
+	    // not correlation matrix
+	    LOG_WARNING("Input corr matrix' diagonal is not all one");
+	}
+	
+	Vector l = lower - mean;
+	Vector u = upper - mean;
+	Vector m = Vector::Constant(l.size(), 0.);
+	
+	int df = 0;
+	return mvt::mvt(l, u, df, corr, m, error, inform, rng);
+    }
     
 }  // namespace bnc
 
