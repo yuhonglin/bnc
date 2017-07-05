@@ -690,7 +690,6 @@ namespace bnc {
 
 	    // finish sampling; postprocessing
 	    rv = Lfull*rv; // reverse scaling of L
-	    std::cout << rv << std::endl;
 	    VectorTemplate<int> index(d);
 	    std::iota(index.data(), index.data()+d, 0);
 	    std::sort(index.data(), index.data()+d, [&perm](const int& i1, const int& i2)

@@ -15,6 +15,16 @@ all interface identical, we use the first argument as the return value.
   1. Scalar distributions implemented in rmath library.
   2. Multivariate normal
   3. Wishart
+
+* Notes
+** Notes on truncated normal distribution
+   1. "P" functions are based on the the ```mvtnorm``` package in R. The main functions
+      are in file ```mvt.hh``` (transformed from ```mvt.f```). And the file ```tmvnorm```
+      should include ```mvt.hh```.
+   2. "R" functions are reimplementation of the ```TruncatedNormal``` package in R
+      with C++. They create identical samples for now, which is a bit slow but good
+      for debugging.
+
 * Todo
   1. Multivariate t Distribution
   2. (Multivariate) Pareto distributions
