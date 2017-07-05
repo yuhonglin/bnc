@@ -17,6 +17,8 @@ namespace bnc {
 #define ML_NEGINF	-INF
 #define ML_NAN		NaN
 #define ML_ERR_return_NAN { LOG_WARNING("return NaN"); return ML_NAN; }
+
+#define dup_no_copy(x) x
     
 typedef enum { FALSE = 0, TRUE } Rboolean;    
 
@@ -536,9 +538,9 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 									\
     template<class X, class M, class S, class T, class L>		\
     typename enable_if<!is_scalar<X>::value,X>::type			\
-    TF(const X &x, const M &mu,						\
-       const S &sigma, const T& lower_tail,				\
-       const L &give_log)						\
+    TF(X &x, M &mu,							\
+       S &sigma, T& lower_tail,						\
+       L &give_log)							\
     {									\
 	X ret = dup_no_copy(x);						\
 	int i1=0,i2=0,i3=0,i4=0;					\
@@ -638,9 +640,9 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 #define R_QFUNC_INTERFACE_5ARG(TF, BRFUNC)				\
     template<class X, class M, class S, class T, class L>		\
     typename enable_if<is_scalar<X>::value,X>::type			\
-    TF(const X &x, const M &mu,						\
-       const S &sigma, const T& lower_tail,				\
-       const L &give_log)						\
+    TF(X &x, M &mu,							\
+       S &sigma, T& lower_tail,						\
+       L &give_log)							\
     {									\
 	X ret;								\
 	ret = BRFUNC(x, first(mu), first(sigma),			\
@@ -651,9 +653,9 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 									\
     template<class X, class M, class S, class T, class L>		\
     typename enable_if<!is_scalar<X>::value,X>::type			\
-    TF(const X &x, const M &mu,						\
-       const S &sigma, const T& lower_tail,				\
-       const L &give_log)						\
+    TF(X &x, M &mu,							\
+       S &sigma, const T& lower_tail,					\
+       L &give_log)							\
     {									\
 	X ret = dup_no_copy(x);						\
 	int i1=0,i2=0,i3=0,i4=0;					\
