@@ -27,10 +27,48 @@ namespace bnc {
 	return truncatednormal::rtmvnorm(n, l, u, Sig, ng);
     }
 
+    // P function
+    // notice the input is correlation matrix
+    template <class RNGType>    
+    double ptmvnorm(Mvt& mvt, const Vector& x, Vector& mean,
+		    Matrix& corr, Vector& lower, Vector& upper,
+		    const SCALE& s=NORMAL, RNGType* rng) {
+	if (!(corr.diagonal().array()==1).all()) {
+	    // not correlation matrix
+	    LOG_WARNING("Input corr matrix' diagonal is not all one");
+	}
+
+	if ((x.array()<lower.array()).any()) {
+	    if (s == NORMAL)
+		return 0.;
+	    else
+		return NEGINF;
+	}
+
+	double p_normal = pmvnorm(mvt, lower, upper, mean, corr, rng);
+	if (s == NORMAL) {
+	    return p_normal;
+	} else {
+	    return std::(p_normal);
+	}
+    }
+    template <class RNGType>    
+    double ptmvnorm(const Vector& x, Vector& mean,
+		    Matrix& corr, Vector& lower, Vector& upper,
+		    const SCALE& s=NORMAL, RNGType* rng) {
+	Mvt mvt;
+	return ptmvnorm(mvt, x, mean, corr, lower, upper, s, rng);
+    }
+
+    
+    // Q function
+    // Not sure if this is useful..., not implemented
+    
     // D function
     // Notice that the input matrix is both sigma and correlation matrix
+    template <class RNGType>    
     double dtmvnorm(Mvt& mvt, const Vector& x, Vector& mean, Matrix& sigma, Matrix& corr,
-		    Vector& lower, Vector& upper, RNGType* rng, const SCALE& s=NORMAL) {
+		    Vector& lower, Vector& upper, const SCALE& s=NORMAL, RNGType* rng) {
 	if (!(corr.diagonal().array()==1).all()) {
 	    // not correlation matrix
 	    LOG_WARNING("Input corr matrix' diagonal is not all one");
@@ -52,6 +90,13 @@ namespace bnc {
 		std::log(pmvnorm(mvt, lower, upper, mean, corr, rng));
 	}
     }
+    template <class RNGType>    
+    double dtmvnorm(const Vector& x, Vector& mean, Matrix& sigma, Matrix& corr,
+		    Vector& lower, Vector& upper, const SCALE& s=NORMAL, RNGType* rng) {
+	Mvt& mvt;
+	return dtmvnorm(mvt, x, mean, sigma, corr, lower, upper, s, rng);
+    }
+
     
 }  // namespace bnc
 
