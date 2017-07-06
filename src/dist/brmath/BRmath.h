@@ -342,9 +342,9 @@ double BR_pow_di(double, int);
 	/* Normal Distribution */
 
 double	dnorm(double, double, double, int);
-double	pnorm(double, double, double, int, int);
+double	pnorm(double, const double&, const double&, const int&, const int&);
 double	qnorm(double, double, double, int, int);
-void	pnorm_both(double, double *, double *, int, int);/* both tails */
+void	pnorm_both(const double&, double *, double *, const int&, const int&);/* both tails */
 
 	/* Uniform Distribution */
 

@@ -44,17 +44,6 @@ namespace bnc {
 	// l and u are column vectors;
 	// uses acceptance-rejection from Rayleigh distr;
 	// method due to Marsaglia (1964);
-	template <class RNGType>
-	inline double sua_ntail(const double&f, const double &c, // Sample Until Accepted
-				RNGType* rng) {
-	    double zero = 0.;
-	    double one  = 1.;
-	    while(true) {
-		double x = c - std::log1p(runif(zero, one, rng)*f);
-		if (pow(runif(zero, one, rng),2)*x <= c) return x;
-	    }
-	    return NaN;
-	}
 
 	template<class T>
 	inline void forward_shift_iter(const T& i1, const T& i2, const int& n) {
@@ -88,24 +77,22 @@ namespace bnc {
 	    Vector f = c.array() - u.array().square()/2.;
 	    for (int i = 0; i<f.size(); i++)
 		f(i) = std::expm1(f(i));
-	    double zero = 0.;
-	    double one  = 1.;
 	    // sample using Rayleigh
-	    x = c.array() - (runif(n, zero, one, rng).array()*f.array()+1).log();
+	    x = c.array() - (runif(n, 0., 1., rng).array()*f.array()+1).log();
 	    // keep list of rejected
 	    std::vector<int> I; I.reserve(l.size());
-	    Vector tmp = runif(n, zero, one, rng);
+	    Vector tmp = runif(n, 0., 1., rng);
 	    for (int i=0; i<n; i++)
 		if (tmp(i)*tmp(i)*x(i)>c(i)) I.push_back(i);
 	    int d = I.size();
 	    while(d>0) { // while there are rejections
 		Vector cy(I.size());
 		for (int i=0; i<I.size(); i++) cy(i) = c(I[i]);
-		Vector uniftmp = runif(d,zero,one,rng);
+		Vector uniftmp = runif(d,0.,1.,rng);
 		Vector y(I.size());
 		for (int i=0; i<I.size(); i++) y(i) = cy(i) - std::log(1+uniftmp(i)*f(I[i]));
 		std::vector<int> idx; idx.reserve(I.size());
-		Vector uniftmp1 = runif(d,zero,one, rng);
+		Vector uniftmp1 = runif(d,0.,1., rng);
 		for (int i=0; i<I.size(); i++)
 		    if (uniftmp1(i)*uniftmp1(i)*y(i) < cy(i))
 			idx.push_back(i);
@@ -121,9 +108,7 @@ namespace bnc {
 	template<class RNGType>	
 	Vector trnd(const Vector& l, const Vector& u, RNGType *rng) {
 	    int n = l.size();
-	    double zero = 0.;
-	    double one = 1.;
-	    Vector x = rnorm(n, zero, one, rng);
+	    Vector x = rnorm(n, 0., 1., rng);
 	    // keep list of rejected
 	    std::vector<int> I; I.reserve(l.size());
 	    for (int i=0; i<l.size(); i++)
@@ -137,7 +122,7 @@ namespace bnc {
 		    uy(i) = u(I[i]);
 		}
 		int tmpfixme = ly.size();
-		Vector y = rnorm(tmpfixme, zero, one, rng);
+		Vector y = rnorm(tmpfixme, 0., 1., rng);
 		std::vector<int> idx; idx.reserve(I.size());
 		for(int i=0; i<ly.size(); i++)
 		    if (y(i) > ly(i) && y(i) < uy(i))
@@ -191,14 +176,12 @@ namespace bnc {
 		    tl(i) = l(notI[i]);
 		    tu(i) = u(notI[i]);
 		}
-		double zero = 0.;
-		double one  = 1.;
-		Vector pl = pnorm(tl, zero, one, one, zero);
-		Vector pu = pnorm(tu, zero, one, one, zero);
+		Vector pl = pnorm(tl, 0., 1., 1, 0);
+		Vector pu = pnorm(tu, 0., 1., 1, 0);
 		int tmplenfixme = tl.size();
 		Vector tmpfixme = pl.array()
 		    + (pu-pl).array() * runif(tmplenfixme, 0., 1.,rng).array();
-		auto tmp = qnorm(tmpfixme, zero, one, one, zero);
+		auto tmp = qnorm(tmpfixme, 0., 1., 1, 0);
 		for (int i=0;i<notI.size();i++) {
 		    x(notI[i]) = tmp(i);
 		}
@@ -390,7 +373,6 @@ namespace bnc {
 	}
       }
 
-
       // implements grad_psi(x) to find optimal exponential twisting;
       // assume scaled 'L' with zero diagonal;
       void gradpsi(const Vector& y, const Matrix& L, const Vector& l,
@@ -553,12 +535,10 @@ namespace bnc {
 	    int iter=0; Matrix rv(d,n);
 	    Vector logpr(n);
 	    Matrix Z(d,n);
-	    double zero = 0.;
-	    double one  = 1.;
 	    int accepted = 0;
 	    while(true) {
 		mvnrnd(n,L,l,u,mu,logpr,Z,rng);
-		Vector unsam = runif(n, zero, one, rng);
+		Vector unsam = runif(n, 0., 1., rng);
 		for (int i=0; i<n; i++) {
 		    if (accepted >=n )
 			break;

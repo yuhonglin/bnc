@@ -6,9 +6,11 @@
 
 extern "C" {
     double br_dnorm4(double x, double mu, double sigma, int give_log);
-    double br_pnorm5(double x, double mu, double sigma, int lower_tail, int log_p);
     double br_qnorm5(double p, double mu, double sigma, int lower_tail, int log_p);
+    double br_pnorm5(double x, const double& mu, const double& sigma,
+		     const int& lower_tail, const int& log_p);
 }
+
 
 namespace bnc {
 

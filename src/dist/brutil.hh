@@ -321,29 +321,29 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 	return x;
     }
     template<typename T>
-    typename enable_if<is_class<T>::value,T>::type::Scalar& first(T& x) {
+    const typename enable_if<is_class<T>::value,T>::type::Scalar& first(T& x) {
 	return x(0);
     }
 
     // Get nth value of a scalar or vector/matrix class safely
     template<typename T>
-    typename enable_if<is_scalar<T>::value,T>::type& nth(T &x,
-							 const int &n) {
+    const typename enable_if<is_scalar<T>::value,T>::type& nth(const T &x,
+							       const int &n) {
 	return x;
     }
     template<typename T>
-    typename enable_if<is_class<T>::value,T>::type::Scalar& nth(T& x,
+    const typename enable_if<is_class<T>::value,T>::type::Scalar& nth(const T& x,
 								const int &n) {
 	return x(n);
     }
 
     // Check if length is beyond array's length
     template<typename T>
-    bool isOut(T &x, const typename enable_if<is_scalar<T>::value,int>::type &n) {
+    bool isOut(const T &x, const typename enable_if<is_scalar<T>::value,int>::type &n) {
 	return false;
     }
     template<typename T>
-    bool isOut(T& x, const typename enable_if<is_class<T>::value,int>::type &n) {
+    bool isOut(const T& x, const typename enable_if<is_class<T>::value,int>::type &n) {
 	return n>=x.size();
     }
 
@@ -538,9 +538,9 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 									\
     template<class X, class M, class S, class T, class L>		\
     typename enable_if<!is_scalar<X>::value,X>::type			\
-    TF(X &x, M &mu,							\
-       S &sigma, T& lower_tail,						\
-       L &give_log)							\
+    TF(const X &x, const M &mu,						\
+       const S &sigma, const T& lower_tail,				\
+       const L &give_log)						\
     {									\
 	X ret = dup_no_copy(x);						\
 	int i1=0,i2=0,i3=0,i4=0;					\
@@ -640,9 +640,9 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 #define R_QFUNC_INTERFACE_5ARG(TF, BRFUNC)				\
     template<class X, class M, class S, class T, class L>		\
     typename enable_if<is_scalar<X>::value,X>::type			\
-    TF(X &x, M &mu,							\
-       S &sigma, T& lower_tail,						\
-       L &give_log)							\
+    TF(const X &x, const M &mu,						\
+       const S &sigma, const T& lower_tail,				\
+       const L &give_log)						\
     {									\
 	X ret;								\
 	ret = BRFUNC(x, first(mu), first(sigma),			\
@@ -653,9 +653,9 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 									\
     template<class X, class M, class S, class T, class L>		\
     typename enable_if<!is_scalar<X>::value,X>::type			\
-    TF(X &x, M &mu,							\
-       S &sigma, const T& lower_tail,					\
-       L &give_log)							\
+    TF(const X &x, const M &mu,						\
+       const S &sigma, const T& lower_tail,				\
+       const L &give_log)						\
     {									\
 	X ret = dup_no_copy(x);						\
 	int i1=0,i2=0,i3=0,i4=0;					\
