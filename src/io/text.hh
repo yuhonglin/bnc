@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 #include <matrix/matrix.hh>
 
@@ -15,7 +16,7 @@ namespace bnc {
 		      typename enable_if<is_class<T>::value, std::string>::type fn)
 	    {
 		std::ofstream ofs(fn);
-		ofs << d;
+		ofs << std::setprecision(16) << d;
 		ofs.flush();
 		ofs.close();
 	    }

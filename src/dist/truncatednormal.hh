@@ -56,7 +56,6 @@ namespace bnc {
 	    return NaN;
 	}
 
-#ifdef TRUNCATEDNORMAL_IDENTICAL
 	template<class T>
 	inline void forward_shift_iter(const T& i1, const T& i2, const int& n) {
 	    auto s = i1 - n;
@@ -85,9 +84,10 @@ namespace bnc {
 	Vector ntail(Vector& l, Vector& u, RNGType* rng) {
 	    Vector x(l.size());
 	    int n = l.size();
-	    Vector c = l.array().pow(2)/2.;
-	    Vector f = c.array() - u.array().pow(2)/2.;
-	    for (int i = 0; i<f.size(); i++) f(i) = std::expm1(f(i));
+	    Vector c = l.array().square()/2.;
+	    Vector f = c.array() - u.array().square()/2.;
+	    for (int i = 0; i<f.size(); i++)
+		f(i) = std::expm1(f(i));
 	    double zero = 0.;
 	    double one  = 1.;
 	    // sample using Rayleigh
@@ -118,21 +118,6 @@ namespace bnc {
 	    return (2*x.array()).sqrt();
 	}	
 
-#else
-	template <class RNGType>
-	Vector ntail(const Vector& l, const Vector& u, RNGType* rng) {
-	    Vector x(l.size());
-	    Vector c = l.array().pow(2)/2.;
-	    Vector f = c.array() - u.array().pow(2)/2.;
-	    for (int i=0; i<l.size(); i++) {
-		x(i) = std::sqrt(2*sua_ntail(std::expm1(f(i)), c(i), rng));
-	    }
-	
-	    return x;
-	}
-#endif
-
-#ifdef TRUNCATEDNORMAL_IDENTICAL
 	template<class RNGType>	
 	Vector trnd(const Vector& l, const Vector& u, RNGType *rng) {
 	    int n = l.size();
@@ -165,30 +150,7 @@ namespace bnc {
 	    }
 	    return x;
 	}
-#else	
-	// uses acceptance rejection to simulate from truncated normal
-	template<class RNGType>
-	inline double rua_trnd(const double& l, const double& u, RNGType *rng) {
-	    double ret;
-	    while (true) {
-		ret = rnorm(0., 1., rng);
-		if (l<=ret && ret<=u)
-		    return ret;
-	    }
-	    return NaN;
-	}
-	template<class RNGType>	
-	Vector trnd(const Vector& l, const Vector& u, RNGType *rng) {
-	    Vector x(l.size());
-	    for (int i=0; i<l.size(); i++) {
-		x(i) = rua_trnd(l(i), u(i), rng);
-	    }
-	    return x;
-	}
-#endif
 
-
-#ifdef TRUNCATEDNORMAL_IDENTICAL
 	// samples a column vector of length=length(l)=length(u)
 	// from the standard multivariate normal distribution,
 	// truncated over the region [l,u], where -a<l<u<a for some
@@ -243,46 +205,6 @@ namespace bnc {
 	    }
 	    return x;
 	}
-#else
-	template<class RNGType>	
-	Vector tn(const Vector& l, const Vector& u, RNGType *rng) {
-	    const double tol = 2.05; // controls switch between methods
-	                             // threshold can be tuned for maximum
-                        	     // speed for each platform
-	    Vector x(l.size());
-	    for (int i = 0; i < l.size(); i++) {
-	      if (std::abs(u(i)-l(i)) > tol) {
-		    // use accept-reject
-		    x(i) = rua_trnd(l(i), u(i), rng);
-		} else {
-		    // use inverse-transform
-		    double pl = pnorm(l(i), 0., 1., 1, 0);
-		    double pu = pnorm(u(i), 0., 1., 1, 0);
-		    x(i) = qnorm(pl+(pu-pl)*runif(0., 1., rng));
-		}
-	    }
-	    return x;
-	}
-	template<class RNGType>	
-	double tn(const double& l, const double& u, RNGType *rng) {
-	    const double tol = 2.05; // controls switch between methods
-	                             // threshold can be tuned for maximum
-                        	     // speed for each platform
-	    double x;
-
-	    if (std::abs(u-l) > tol) {
-		// use accept-reject
-		x = rua_trnd(l, u, rng);
-	    } else {
-		// use inverse-transform
-		double pl = pnorm(l, 0., 1., 1, 0);
-		double pu = pnorm(u, 0., 1., 1, 0);
-		x = qnorm(pl+(pu-pl)*runif(0., 1., rng));
-	    }
-
-	    return x;
-	}
-#endif
 
 	
 	//  truncated normal generator
@@ -300,7 +222,6 @@ namespace bnc {
 	// Z. I. Botev (2015),
 	// "The Normal Law Under Linear Restrictions:
 	//  Simulation and Estimation via Minimax Tilting", submitted to JRSS(B)
-#ifdef 	TRUNCATEDNORMAL_IDENTICAL
 	template <class RNGType>
 	Vector trandn(Vector& l, Vector& u, RNGType* rng) {
 	    ASSERT_MSG((l.array()<=u.array()).all(),
@@ -365,31 +286,6 @@ namespace bnc {
 	    return x;
 	}
 	
-#else
-	template <class RNGType>
-	Vector trandn(Vector& l, Vector& u, RNGType* rng) {
-	  ASSERT_MSG((l.array()<=u.array()).all(),
-		       "Truncation limits have to be l<=u");
-
-	    Vector x = Vector::Zero(l.size());
-	    // treshold for switching between methods
-	    // threshold can be tuned for maximum speed for each Matlab version
-	    const double a = .4; 
-	    // three cases to consider:
-	    for (int i = 0; i < l.size(); i++) {
-		if (l(i) > a) {
-		    // case 1: a<l<u
-		    x(i) = sua_ntail(l(i), u(i), rng);
-		} else if (u(i) < -a) {
-		    x(i) = -sua_ntail(-u(i), -l(i), rng);
-		} else {
-		    x(i) = tn(l(i), u(i), rng);
-		}
-	    }
-	    
-	    return x;
-	}
-#endif	
 
       //  Computes permuted lower Cholesky factor L for Sig
       //  by permuting integration limit vectors l and u.
@@ -425,15 +321,14 @@ namespace bnc {
 
 	  if (j > 1) {
 	    s = D.segment(j,d-j).array() -
-	      (L.block(j,0,d-j,j).array().pow(2).matrix() *
-	       Vector::Ones(j)).array();
-	    cols = L.block(j,0,d-j,j) * z.segment(0,j);
+		L.block(j,0,d-j,j).array().square().rowwise().sum();
+	    cols = L.block(j,0,d-j,j) * z.head(j);
 	  } else if (j==1) {
-	    s = D.segment(j,d-j).array() -
-	      L.block(j,0,d-j,1).array().pow(2);
+	    s = D.tail(d-j).array() -
+		L.block(j,0,d-j,1).array().square();
 	    cols = L.block(j,0,d-j,1)*z(0);
 	  } else {
-	    s = D.segment(j,d-j);
+	    s = D.tail(d-j);
 	    cols.array() = 0.;
 	  }
 	
@@ -444,9 +339,9 @@ namespace bnc {
 	      s(i) = std::sqrt(s(i));
 	  }
 	
-	  tl = (l.segment(j,d-j).array()-cols.array()) / s.array();
-	  tu = (u.segment(j,d-j).array()-cols.array()) / s.array();
-	  pr.segment(j,d-j) = lnNpr(tl, tu);
+	  tl = (l.tail(d-j)-cols).array() / s.array();
+	  tu = (u.tail(d-j)-cols).array() / s.array();
+	  pr.tail(d-j) = lnNpr(tl, tu);
 	  // find smallest marginal dimension
 	  double k; pr.minCoeff(&k);
 	  // flip dimensions k-->j
@@ -457,7 +352,7 @@ namespace bnc {
 	  std::swap(l(j), l(k)); std::swap(u(j), u(k)); // update integration limit
 	  std::swap(perm(j), perm(k)); // keep track of permutation
 	  // construct L sequentially via Cholesky computation
-	  double tmp = Sig(j,j) - L.block(j,0,1,j).array().pow(2).sum();
+	  double tmp = Sig(j,j) - L.block(j,0,1,j).array().square().sum();
 	  if (tmp < -0.001) {
 	    LOG_WARNING("Sigma is not positive semi-definite");
 	  }
@@ -483,15 +378,15 @@ namespace bnc {
 	  // find mean value, z(j), of truncated normal:
 	  double tmpl =
 	    (l(j) - (L.block(j,0,1,j+1).transpose().array() *
-		     z.segment(0,j+1).array()).sum()) / L(j,j);
+		     z.head(j+1).array()).sum()) / L(j,j);
 	  double tmpu =
 	    (u(j) - (L.block(j,0,1,j+1).transpose().array() *
-		     z.segment(0,j+1).array()).sum()) / L(j,j);
+		     z.head(j+1).array()).sum()) / L(j,j);
 	
 	  double w = lnNpr(tmpl, tmpu); // aids in computing expected value
 	  // of trunc. normal
 	  z(j) = (std::exp(-.5*tmpl*tmpl-w)-std::exp(-.5*tmpu*tmpu-w)) /
-	    std::sqrt(2*3.1415926535897932384626433);
+	      std::sqrt(2*3.1415926535897932384626433);
 	}
       }
 
@@ -501,29 +396,29 @@ namespace bnc {
       void gradpsi(const Vector& y, const Matrix& L, const Vector& l,
 		   const Vector& u, /*output:*/ Vector& grad, Matrix& Jac) {
 	int d = u.size();
-	Vector c  = Vector::Zero(d);
-	Vector x  = Vector::Zero(d);
-	Vector mu = Vector::Zero(d);
-	x.segment(0,d-1) = y.segment(0,d-1);
-	mu.segment(0,d-1) = y.segment(d-1, d-1);    
+	Vector c(d);
+	Vector x(d);
+	Vector mu(d);
+	x.head(d-1) = y.head(d-1); x(d-1) = 0.;
+	mu.head(d-1) = y.tail(d-1); mu(d-1) = 0.;
 	// compute now ~l and ~u
-	c.segment(1,d-1) = L.block(1,0,d-1,d)*x;
+	c.tail(d-1) = L.bottomRightCorner(d-1,d)*x; c(0) = 0.;
 
 	Vector lt = l - mu - c;
 	Vector ut = u - mu - c;
 	// compute gradients avoiding catastrophic cancellation
 	Vector w = lnNpr(lt, ut);
-	Vector pl = (-lt.array().pow(2)*0.5-w.array()).exp() /
+	Vector pl = (-lt.array().square()*0.5-w.array()).exp() /
 	  std::sqrt(2*3.1415926535897932384626433);
-	Vector pu = (-ut.array().pow(2)*0.5-w.array()).exp() /
+	Vector pu = (-ut.array().square()*0.5-w.array()).exp() /
 	  std::sqrt(2*3.1415926535897932384626433);
 	Vector P = pl-pu;
 
 	// output the gradient
-	Vector dfdx = -mu.segment(0,d-1) + (P.transpose()*L.block(0,0,d,d-1)).transpose();
+	Vector dfdx = -mu.head(d-1) + (P.transpose()*L.topLeftCorner(d,d-1)).transpose();
 	Vector dfdm = mu - x + P;
-	grad.segment(0,d-1) = dfdx;
-	grad.segment(d-1,d-1) = dfdm.segment(0,d-1);
+	grad.head(d-1) = dfdx;
+	grad.tail(d-1) = dfdm.head(d-1);
 	// here compute Jacobian matrix
 	for (int i=0; i<d; i++) {
 	  if (std::isinf(lt(i)))
@@ -532,16 +427,16 @@ namespace bnc {
 	    ut(i) = 0.;
 	}
 
-	Vector dP = -P.array().pow(2)+lt.array()*pl.array()-ut.array()*pu.array();
+	Vector dP = -P.array().square()+lt.array()*pl.array()-ut.array()*pu.array();
 	Matrix DL = L.array().colwise()*dP.array();
 	Matrix mx = DL; mx.diagonal().array() -= 1;
 	Matrix xx = L.transpose()*DL;
 
-	Jac.block(0,0,d-1,d-1) = xx.block(0,0,d-1,d-1);
-	Jac.block(d-1,0,d-1,d-1) = mx.block(0,0,d-1,d-1);
-	Jac.block(0,d-1,d-1,d-1) = mx.block(0,0,d-1,d-1).transpose();	
-	Jac.block(d-1,d-1,d-1,d-1) =
-	  (dP.segment(0,d-1).array() + 1.).matrix().asDiagonal();
+	Jac.topLeftCorner(d-1,d-1) = xx.topLeftCorner(d-1,d-1);
+	Jac.bottomLeftCorner(d-1,d-1) = mx.topLeftCorner(d-1,d-1);
+	Jac.topRightCorner(d-1,d-1) = mx.topLeftCorner(d-1,d-1).transpose();	
+	Jac.bottomRightCorner(d-1,d-1) =
+	  (dP.head(d-1).array() + 1.).matrix().asDiagonal();
       }
 
       Vector nleq(const Vector &l, const Vector &u, const Matrix &L) {
@@ -558,7 +453,7 @@ namespace bnc {
                         	      // "Direct methods for solving symmetric indefinite
 	                              // systems of linear equations." SIAM Journal on
 	                              // Numerical Analysis 8.4 (1971): 639-655.
-	  err = grad.array().pow(2).sum();
+	  err = grad.array().square().sum();
 	  iter++;
 	  if (iter>100) {
 	    LOG_WARNING("Covariance matrix is ill-conditioned and method failed, return rubbish.");
@@ -573,16 +468,16 @@ namespace bnc {
 			  const Vector& u, const Vector& in_mu) {
 	    const int d = u.size();
 	    Vector x(d);
-	    x.segment(0,d-1) = in_x; x(d-1) = 0.;
+	    x.head(d-1) = in_x; x(d-1) = 0.;
 	    Vector mu(d);
-	    mu.segment(0,d-1) = in_mu; mu(d-1) = 0.;
+	    mu.head(d-1) = in_mu; mu(d-1) = 0.;
 
 	    // compute now ~l and ~u
 	    Vector c = L*x;
 	    Vector tmp1 = l-mu-c;
 	    Vector tmp2 = u-mu-c;
 	    return (lnNpr(tmp1, tmp2).array() +
-		    .5*mu.array().pow(2) - x.array()*mu.array()).sum();
+		    .5*mu.array().square() - x.array()*mu.array()).sum();
 	}
 
       // generates the proposals from the exponentially tilted 
@@ -599,7 +494,7 @@ namespace bnc {
 	    p.array() = 0;
 	    for (int k=0; k<d; k++) {
 		// compute matrix multiplication L*Z
-		Vector col = Z.block(0,0,k+1,n).transpose() *
+		Vector col = Z.topLeftCorner(k+1,n).transpose() *
 		    L.block(k,0,1,k+1).transpose();
 		// compute limits of truncation
 		Vector tl  = -col.array() + (l(k) - mu(k));
@@ -611,7 +506,6 @@ namespace bnc {
 		    .5*mu(k)*mu(k) - mu(k)*Z.row(k).transpose().array();
 	    }
 	}
-      
       
       //// truncated multivariate normal generator
       // simulates 'n' random vectors exactly/perfectly distributed
@@ -651,8 +545,8 @@ namespace bnc {
 	    // find optimal tilting parameter via non-linear equation solver
 	    Vector xmu = nleq(l,u,L);
 	    //assign saddlepoint x* and mu*
-	    Vector x = xmu.segment(0,d-1);
-	    Vector mu = xmu.segment(d-1,d-1);
+	    Vector x = xmu.head(d-1);
+	    Vector mu = xmu.tail(d-1);
 	    // compute psi star
 	    double psistar = psy(x,L,l,u,mu);
 	    // start acceptance rejection sampling

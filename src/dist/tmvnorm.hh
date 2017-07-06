@@ -23,7 +23,9 @@ namespace bnc {
     template <class RNGType>
     inline Matrix rtmvnorm(const int& n, const Vector& mean, const Matrix& Sig,
 			   const Vector& l, const Vector& u, RNGType* rng) {
-	return truncatednormal::rtmvnorm(n, l, u, Sig, rng).array()
+	Vector lower = l - mean;
+	Vector upper = u - mean;
+	return truncatednormal::rtmvnorm(n, lower, upper, Sig, rng).array()
 	    .colwise() + mean.array();
     }
 

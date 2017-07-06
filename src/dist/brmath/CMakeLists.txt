@@ -1,3 +1,5 @@
+set(CMAKE_BUILD_TYPE Release)
+
 include_directories(${PROJECT_SOURCE_DIR}/../ ${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/../../ ${PROJECT_SOURCE_DIR}/src/util/)
 
 file(GLOB brmath_src

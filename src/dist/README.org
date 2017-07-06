@@ -30,10 +30,13 @@ all interface identical, we use the first argument as the return value.
       one has to call ```pmvnorm``` multiple times, providing a ```Mvt``` object is
       preferred. For multithreading, one Mvt must be provided for each thread.
       
-
 * Todo
   1. Multivariate t Distribution
   2. (Multivariate) Pareto distributions
   3. Dirichlet Distribution
   4. Add likelihood ratio function to each distribution
   5. Make arguments ```const``` wherever possible
+* Bottle net of performance
+** ```brmath```
+   From profiling, the ```pnorm``` function is the bottle net for truncated normal sampling. Maybe adding
+   ```const``` to those functions' arguments can help improve it.
