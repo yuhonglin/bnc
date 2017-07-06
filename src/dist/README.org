@@ -24,9 +24,16 @@ all interface identical, we use the first argument as the return value.
    2. "R" functions are reimplementation of the ```TruncatedNormal``` package in R
       with C++. They create identical samples for now, which is a bit slow but good
       for debugging.
+   3. ```pmvnorm``` computes the probability measure of a box area defined by ```lower```
+      and ```upper```. And to use that, one can optionally provide a ```Mvt``` object.
+      This object can be reused arbitrarily *IN A SINGLE THREAD*, so to speed up, when 
+      one has to call ```pmvnorm``` multiple times, providing a ```Mvt``` object is
+      preferred. For multithreading, one Mvt must be provided for each thread.
+      
 
 * Todo
   1. Multivariate t Distribution
   2. (Multivariate) Pareto distributions
   3. Dirichlet Distribution
   4. Add likelihood ratio function to each distribution
+  5. Make arguments ```const``` wherever possible
