@@ -16,24 +16,24 @@
 #include <dist/chisq.hh>
 #include <dist/mvnorm.hh>
 
-#define TRUNCATEDNORMAL_IDENTICAL
 #include <dist/truncatednormal.hh>
 
 namespace bnc {
     // R function
     template <class RNGType>
-    inline Matrix rtmvnorm(const int& n, const Vector& l, const Vector& u,
-			   const Matrix& Sig, RNGType* rng) {
-	return truncatednormal::rtmvnorm(n, l, u, Sig, ng);
+    inline Matrix rtmvnorm(const int& n, const Vector& mean, const Matrix& Sig,
+			   const Vector& l, const Vector& u, RNGType* rng) {
+	return truncatednormal::rtmvnorm(n, l, u, Sig, rng).array()
+	    .colwise() + mean.array();
     }
 
     // P function
     // notice the input is correlation matrix
     template <class RNGType>    
-    double ptmvnorm(Mvt& mvt, const Vector& x, Vector& mean,
+    double ptmvnorm(Mvt& mvt, Vector& x, Vector& mean,
 		    Matrix& corr, Vector& lower, Vector& upper,
-		    const SCALE& s=NORMAL, RNGType* rng) {
-	if (!(corr.diagonal().array()==1).all()) {
+		    const SCALE& s, RNGType* rng) {
+	if (!((corr.diagonal().array()-1).abs()<1e-15).all()) {
 	    // not correlation matrix
 	    LOG_WARNING("Input corr matrix' diagonal is not all one");
 	}
@@ -45,17 +45,19 @@ namespace bnc {
 		return NEGINF;
 	}
 
-	double p_normal = pmvnorm(mvt, lower, upper, mean, corr, rng);
+	double l = pmvnorm(mvt, lower, x, mean, corr, rng);
+	double u = pmvnorm(mvt, x, upper, mean, corr, rng);
+	double p_normal = l/(l+u);
 	if (s == NORMAL) {
 	    return p_normal;
 	} else {
-	    return std::(p_normal);
+	    return std::log(p_normal);
 	}
     }
     template <class RNGType>    
-    double ptmvnorm(const Vector& x, Vector& mean,
+    double ptmvnorm(Vector& x, Vector& mean,
 		    Matrix& corr, Vector& lower, Vector& upper,
-		    const SCALE& s=NORMAL, RNGType* rng) {
+		    const SCALE& s, RNGType* rng) {
 	Mvt mvt;
 	return ptmvnorm(mvt, x, mean, corr, lower, upper, s, rng);
     }
@@ -68,8 +70,8 @@ namespace bnc {
     // Notice that the input matrix is both sigma and correlation matrix
     template <class RNGType>    
     double dtmvnorm(Mvt& mvt, const Vector& x, Vector& mean, Matrix& sigma, Matrix& corr,
-		    Vector& lower, Vector& upper, const SCALE& s=NORMAL, RNGType* rng) {
-	if (!(corr.diagonal().array()==1).all()) {
+		    Vector& lower, Vector& upper, const SCALE& s, RNGType* rng) {
+	if (!((corr.diagonal().array()-1).abs()<1e-15).all()) {
 	    // not correlation matrix
 	    LOG_WARNING("Input corr matrix' diagonal is not all one");
 	}
@@ -92,8 +94,8 @@ namespace bnc {
     }
     template <class RNGType>    
     double dtmvnorm(const Vector& x, Vector& mean, Matrix& sigma, Matrix& corr,
-		    Vector& lower, Vector& upper, const SCALE& s=NORMAL, RNGType* rng) {
-	Mvt& mvt;
+		    Vector& lower, Vector& upper, const SCALE& s, RNGType* rng) {
+	Mvt mvt;
 	return dtmvnorm(mvt, x, mean, sigma, corr, lower, upper, s, rng);
     }
 

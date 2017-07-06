@@ -1,5 +1,5 @@
-#ifndef TNORM_H
-#define TNORM_H
+#ifndef TRUNCATEDNORMAL_H
+#define TRUNCATEDNORMAL_H
 
 #include <cmath>
 #include <vector>
@@ -17,8 +17,6 @@
 #include <dist/mvnorm.hh>
 
 #define TRUNCATEDNORMAL_IDENTICAL
-
-#define COUT(x) cout << #x << " : \n" << x << endl;
 
 namespace bnc {
     namespace truncatednormal {
@@ -700,4 +698,4 @@ namespace bnc {
     } // namespace truncatednormal    
 }  // namespace bnc
 
-#endif /* TNORM_H */
+#endif /* TRUNCATEDNORMAL_H */

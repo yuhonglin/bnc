@@ -168,7 +168,7 @@ namespace bnc {
     double pmvnorm(Mvt& mvt, Vector &lower, Vector &upper, Vector &mean,
 		   Matrix &corr, RNGType *rng, double& error, int &inform) {
 
-	if (!(corr.diagonal().array()==1).all()) {
+	if (!((corr.diagonal().array()-1).abs()<1e-15).all()) {
 	    // not correlation matrix
 	    LOG_WARNING("Input corr matrix' diagonal is not all one");
 	}
