@@ -123,7 +123,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class RNGType, class AType, class BType>			\
-    typename enable_if<is_class<AType>::value&&is_class<BType>::value,	\
+    typename std::enable_if<std::is_class<AType>::value&&std::is_class<BType>::value, \
 	      Vector>::type						\
     FUNC(const int&n, const AType& a, const BType& b,			\
 		RNGType *rng)						\
@@ -140,7 +140,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class RNGType, class BType>				\
-    typename enable_if<is_class<BType>::value,Vector>::type		\
+    typename std::enable_if<std::is_class<BType>::value,Vector>::type	\
     FUNC(const int&n, const double &a, const BType &b,			\
 		 RNGType *rng)						\
     {									\
@@ -154,7 +154,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class RNGType, class AType>				\
-    typename enable_if<is_class<AType>::value,Vector>::type		\
+    typename std::enable_if<std::is_class<AType>::value,Vector>::type	\
     FUNC(const int&n, const AType &a, const double &b,			\
 		 RNGType *rng)						\
     {									\
@@ -317,33 +317,33 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 
     // Get first value of a scalar or vector/matrix class safely
     template<typename T>
-    typename enable_if<is_scalar<T>::value,T>::type& first(T &x) {
+    typename std::enable_if<std::is_scalar<T>::value,T>::type& first(T &x) {
 	return x;
     }
     template<typename T>
-    const typename enable_if<is_class<T>::value,T>::type::Scalar& first(T& x) {
+    const typename std::enable_if<std::is_class<T>::value,T>::type::Scalar& first(T& x) {
 	return x(0);
     }
 
     // Get nth value of a scalar or vector/matrix class safely
     template<typename T>
-    const typename enable_if<is_scalar<T>::value,T>::type& nth(const T &x,
+    const typename std::enable_if<std::is_scalar<T>::value,T>::type& nth(const T &x,
 							       const int &n) {
 	return x;
     }
     template<typename T>
-    const typename enable_if<is_class<T>::value,T>::type::Scalar& nth(const T& x,
+    const typename std::enable_if<std::is_class<T>::value,T>::type::Scalar& nth(const T& x,
 								const int &n) {
 	return x(n);
     }
 
     // Check if length is beyond array's length
     template<typename T>
-    bool isOut(const T &x, const typename enable_if<is_scalar<T>::value,int>::type &n) {
+    bool isOut(const T &x, const typename std::enable_if<std::is_scalar<T>::value,int>::type &n) {
 	return false;
     }
     template<typename T>
-    bool isOut(const T& x, const typename enable_if<is_class<T>::value,int>::type &n) {
+    bool isOut(const T& x, const typename std::enable_if<std::is_class<T>::value,int>::type &n) {
 	return n>=x.size();
     }
 
@@ -391,7 +391,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     
 #define R_DFUNC_INTERFACE_3ARG(TF, BRFUNC)	      	        \
     template<class X, class M, class L>				\
-    typename enable_if<is_scalar<X>::value,X>::type		\
+    typename std::enable_if<std::is_scalar<X>::value,X>::type		\
     TF(const X &x, const M &mu,					\
        const L &give_log)					\
     {								\
@@ -402,7 +402,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }								\
 								\
     template<class X, class M, class L>				\
-    typename enable_if<!is_scalar<X>::value,X>::type		\
+    typename std::enable_if<!std::is_scalar<X>::value,X>::type		\
     TF(const X &x, const M &mu,	const L &give_log)		\
     {								\
 	auto ret = dup_no_copy(x);				\
@@ -420,7 +420,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     
 #define R_DFUNC_INTERFACE_4ARG(TF, BRFUNC)	      	        \
     template<class X, class M, class S, class L>		\
-    typename enable_if<is_scalar<X>::value,X>::type		\
+    typename std::enable_if<std::is_scalar<X>::value,X>::type		\
     TF(const X &x, const M &mu,					\
        const S &sigma, const L &give_log)			\
     {								\
@@ -431,7 +431,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }								\
 								\
     template<class X, class M, class S, class L>		\
-    typename enable_if<!is_scalar<X>::value,X>::type		\
+    typename std::enable_if<!std::is_scalar<X>::value,X>::type		\
     TF(const X &x, const M &mu,					\
        const S &sigma, const L &give_log)			\
     {								\
@@ -452,7 +452,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 
 #define R_DFUNC_INTERFACE_5ARG(TF, BRFUNC)	      	        \
     template<class X, class M, class S, class K, class L>	\
-    typename enable_if<is_scalar<X>::value,X>::type		\
+    typename std::enable_if<std::is_scalar<X>::value,X>::type		\
     TF(const X &x, const M &mu,					\
        const S &sigma, const K &k, const L &give_log)		\
     {								\
@@ -464,7 +464,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }								\
 								\
     template<class X, class M, class S, class K, class L>	\
-    typename enable_if<!is_scalar<X>::value,X>::type		\
+    typename std::enable_if<!std::is_scalar<X>::value,X>::type		\
     TF(const X &x, const M &mu,					\
        const S &sigma, const K& k, const L &give_log)		\
     {								\
@@ -488,7 +488,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     
 #define R_PFUNC_INTERFACE_4ARG(TF, BRFUNC)				\
     template<class X, class M, class T, class L>			\
-    typename enable_if<is_scalar<X>::value,X>::type			\
+    typename std::enable_if<std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const T& lower_tail,						\
        const L &give_log)						\
@@ -501,7 +501,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class X, class M, class T, class L>			\
-    typename enable_if<!is_scalar<X>::value,X>::type			\
+    typename std::enable_if<!std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const T& lower_tail,						\
        const L &give_log)						\
@@ -524,7 +524,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 
 #define R_PFUNC_INTERFACE_5ARG(TF, BRFUNC)				\
     template<class X, class M, class S, class T, class L>		\
-    typename enable_if<is_scalar<X>::value,X>::type			\
+    typename std::enable_if<std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const S &sigma, const T& lower_tail,				\
        const L &give_log)						\
@@ -537,7 +537,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class X, class M, class S, class T, class L>		\
-    typename enable_if<!is_scalar<X>::value,X>::type			\
+    typename std::enable_if<!std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const S &sigma, const T& lower_tail,				\
        const L &give_log)						\
@@ -562,7 +562,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 
 #define R_PFUNC_INTERFACE_6ARG(TF, BRFUNC)				\
     template<class X, class M, class S, class K, class T, class L>	\
-    typename enable_if<is_scalar<X>::value,X>::type			\
+    typename std::enable_if<std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const S &sigma, const K& k, const T& lower_tail,			\
        const L &give_log)						\
@@ -575,7 +575,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class X, class M, class S, class K, class T, class L>	\
-    typename enable_if<!is_scalar<X>::value,X>::type			\
+    typename std::enable_if<!std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const S &sigma, const K &k, const T &lower_tail,			\
        const L &give_log)						\
@@ -603,7 +603,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 
 #define R_QFUNC_INTERFACE_4ARG(TF, BRFUNC)				\
     template<class X, class M, class T, class L>			\
-    typename enable_if<is_scalar<X>::value,X>::type			\
+    typename std::enable_if<std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const T& lower_tail,						\
        const L &give_log)						\
@@ -616,7 +616,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class X, class M, class T, class L>			\
-    typename enable_if<!is_scalar<X>::value,X>::type			\
+    typename std::enable_if<!std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const T& lower_tail,						\
        const L &give_log)						\
@@ -639,7 +639,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 
 #define R_QFUNC_INTERFACE_5ARG(TF, BRFUNC)				\
     template<class X, class M, class S, class T, class L>		\
-    typename enable_if<is_scalar<X>::value,X>::type			\
+    typename std::enable_if<std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const S &sigma, const T& lower_tail,				\
        const L &give_log)						\
@@ -652,7 +652,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class X, class M, class S, class T, class L>		\
-    typename enable_if<!is_scalar<X>::value,X>::type			\
+    typename std::enable_if<!std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const S &sigma, const T& lower_tail,				\
        const L &give_log)						\
@@ -677,7 +677,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
 
 #define R_QFUNC_INTERFACE_6ARG(TF, BRFUNC)				\
     template<class X, class M, class S, class T, class K, class L>	\
-    typename enable_if<is_scalar<X>::value,X>::type			\
+    typename std::enable_if<std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const S &sigma, const K &k, const T& lower_tail,			\
        const L &give_log)						\
@@ -690,7 +690,7 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }									\
 									\
     template<class X, class M, class S, class K, class T, class L>	\
-    typename enable_if<!is_scalar<X>::value,X>::type			\
+    typename std::enable_if<!std::is_scalar<X>::value,X>::type			\
     TF(const X &x, const M &mu,						\
        const S &sigma, const K& k, const T& lower_tail,			\
        const L &give_log)						\

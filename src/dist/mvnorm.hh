@@ -121,7 +121,7 @@ namespace bnc {
     // for row vector
     template <int R, int C>
     double dmvnorm(const Eigen::Matrix<double,R,C>& x,
-		   const typename enable_if<R==1,Vector>::type& mu,
+		   const typename std::enable_if<R==1,Vector>::type& mu,
 		   const Matrix& sigma, const SCALE& s=NORMAL) {
 
 	auto diff = x.transpose() - mu;
@@ -142,7 +142,7 @@ namespace bnc {
     // for column vector
     template <int R, int C>
     double dmvnorm(const Eigen::Matrix<double,R,C>& x,
-		   const typename enable_if<C==1,Vector>::type& mu,
+		   const typename std::enable_if<C==1,Vector>::type& mu,
 		   const Matrix& sigma, const SCALE& s=NORMAL) {
 
 	auto diff = x - mu;

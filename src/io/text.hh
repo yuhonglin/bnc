@@ -13,7 +13,7 @@ namespace bnc {
 	namespace text {
 	    template<class T>
 	    void dump(const T &d,
-		      typename enable_if<is_class<T>::value, std::string>::type fn)
+		      typename std::enable_if<std::is_class<T>::value, std::string>::type fn)
 	    {
 		std::ofstream ofs(fn);
 		ofs << std::setprecision(16) << d;
