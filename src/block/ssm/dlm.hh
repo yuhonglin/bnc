@@ -1,3 +1,7 @@
+/*
+  Dynamic Linear Model based on Eigen
+  Author: Honglin Yu
+ */
 #ifndef DLM_H
 #define DLM_H
 
@@ -57,8 +61,11 @@ namespace bnc {
 	    for (int i=0; i<len; i++) {		
 		hU[i] = nth(A,i)*U[i];
 		hS[i] = nth(A,i)*S[i]*nth(A,i).transpose() + nth(Sw,i);
-		K = hS[i] * nth(C,i).transpose() *
-		    (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).inverse(); // FIXME: use solve and Cholesky
+//		K = hS[i] * nth(C,i).transpose() *
+//		    (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).inverse(); // FIXME: use solve and Cholesky
+		K = (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).llt()
+		    .solve(nth(C,i) * hS[i]).transpose();
+
 		U[i+1] = hU[i] + K*(y.col(i)-nth(C,i)*hU[i]);	       
 		S[i+1] = hS[i] - K*nth(C,i)*hS[i];
 	    }
@@ -77,7 +84,8 @@ namespace bnc {
 	    Vector E(U[0].rows());
 	    ret.col(len-1) = rmvnorm(U[len], S[len], rng);
 	    for (int i = len-2; i>=0; i--) {
-		L   = S[i+1]*nth(A,i).transpose()*hS[i+1].inverse(); // FIXME: use solve and Cholesky
+//		L   = S[i+1]*nth(A,i).transpose()*hS[i+1].inverse(); // FIXME: use solve and Cholesky
+		L   = hS[i+1].llt().solve(nth(A,i)*S[i+1]).transpose();
 		E   = U[i+1] + L*(ret.col(i+1)-hU[i+1]);
 		Var = S[i+1] - L*hS[i+1].inverse()*nth(A,i)*S[i+1];
                 ret.col(i) = rmvnorm(E, Var, rng);
