@@ -47,6 +47,17 @@ namespace bnc {
 	DLM() {
 	}
 
+	/**
+	 * The Kalman filter function
+	 * 
+	 * \param y : the input data
+	 * \param A : the dynamic transform matrix
+	 * \param C : the observation matrix
+	 * \param Sw : the covariance of noise in latent dynamics
+	 * \param Sv : the covariance of noise in observation
+	 * \param m0 : the mean of latent at time 0
+	 * \param C0 : the variance of latent at time 0
+	 */
 	template<class DynMatType, class ObsMatType, class DynCovType,
 		 class ObsCovType>
 	void filter(const Matrix & y, const DynMatType& A, const ObsMatType& C,
@@ -83,6 +94,23 @@ namespace bnc {
 	    }
 	}
 
+	/**
+	 * Sample a single sample from the posterior distribution of
+	 * the latent variable.
+	 * NOT use it when multiple samples are needed for two reasons
+	 *    1. Unnecessary filterings will be called.
+	 *    2. Multiple Cholesky decomposition will be done in rmvnorm.
+	 * \param y : the input data
+	 * \param A : the dynamic transform matrix
+	 * \param C : the observation matrix
+	 * \param Sw : the covariance of noise in latent dynamics
+	 * \param Sv : the covariance of noise in observation
+	 * \param m0 : the mean of latent at time 0
+	 * \param C0 : the variance of latent at time 0
+	 * \param rng : rng
+	 * \return Matrix: a matrix of latent samples. The ith column
+	 *                 is a sample of latent variable at time i.
+	 */
 	template<class RNGType, class DynMatType, class ObsMatType,
 		 class DynCovType, class ObsCovType>
 	Matrix sample(const Matrix& y, const DynMatType& A, const ObsMatType& C,
@@ -106,6 +134,17 @@ namespace bnc {
 	    return ret;
 	}
 
+	/**
+	 * The Kalman smoothing function
+	 * \param y : the input data
+	 * \param A : the dynamic transform matrix
+	 * \param C : the observation matrix
+	 * \param Sw : the covariance of noise in latent dynamics
+	 * \param Sv : the covariance of noise in observation
+	 * \param m0 : the mean of latent at time 0
+	 * \param C0 : the variance of latent at time 0
+	 * 
+	 */
 	template<class DynMatType, class ObsMatType, class DynCovType,
 		 class ObsCovType>
 	void smooth(const Matrix & y, const DynMatType& A, const ObsMatType& C,
