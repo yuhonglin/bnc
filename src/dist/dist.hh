@@ -19,6 +19,11 @@
 #include "dist/t.hh"
 #include "dist/chisq.hh"
 
+// multivariate
+#include "mvnorm.hh"
+#include "tmvnorm.hh"
+#include "wishart.hh"
+
 namespace bnc {
     enum SCALE { NORMAL=0, LOG=1 };
     enum TAIL { UPTAIL=0, LOWTAIL=1 };
