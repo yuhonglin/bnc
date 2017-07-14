@@ -48,8 +48,8 @@ namespace bnc {
 	void filter(const Matrix & y, const DynMatType& A, const ObsMatType& C,
 		    const DynCovType& Sw, const ObsCovType& Sv,
 		    const Vector& m0, const Matrix& C0) {
-	    const int length = y.size()+1;
-	    len = y.size();
+	    const int length = y.cols()+1;
+	    len = y.cols();
 	    S.resize(length);
 	    hS.resize(length);
 	    U.resize(length);
@@ -86,7 +86,7 @@ namespace bnc {
 		      const Vector& m0, const Matrix& C0,
 		      RNGType* rng) {
 	    filter(y, A, C, Sw, Sv, m0, C0);
-	    Matrix ret(U[0].size(),len);
+	    Matrix ret(U[0].rows(),len);
 	    Matrix L(S[0].rows(),hS[0].rows());
 	    Matrix Var(S[0].rows(),S[0].cols());
 	    Vector E(U[0].rows());
@@ -108,8 +108,8 @@ namespace bnc {
 		    const DynCovType& Sw, const ObsCovType& Sv,
 		    const Vector& m0, const Matrix& C0) {
 	    filter(y, A, C, Sw, Sv, m0, C0);
-	    sU.resize(y.size());
-	    sS.resize(y.size());
+	    sU.resize(y.cols());
+	    sS.resize(y.cols());
 
 	    Matrix L(S[0].rows(),hS[0].rows());
 	    sU[len-1] = U[len];
