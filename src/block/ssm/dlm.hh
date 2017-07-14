@@ -25,6 +25,10 @@ namespace bnc {
 	std::vector<Matrix> sS; // smoothing marginal variance
 	int                len;
 
+	/**
+	 * Pick the nth element if first input is a vector
+	 * otherwise return the first input.
+	 */
 	// for vector
 	template<class T>
 	inline typename T::value_type&
@@ -115,12 +119,12 @@ namespace bnc {
 	    sU[len-1] = U[len];
 	    sS[len-1] = S[len];
 	    for (int i = len-2; i>=0; i--) {
-		L      = S[i+1]*nth(A,i).transpose()*hS[i+1].inverse(); // FIXME: use solve and Cholesky
+		// L      = S[i+1]*nth(A,i).transpose()*hS[i+1].inverse(); // FIXME: use solve and Cholesky
+		L      = (hS[i+1].llt().solve(nth(A,i)*S[i+1])).transpose();
 		sU[i]  = U[i+1] + L*(sU[i+1] - hU[i+1]);
 		sS[i]  = S[i+1] + L*(sS[i+1] - hS[i+1])*L.transpose();
             }
 	}
-
 
 	std::vector<Vector> getFilterMean() {
 	    return std::vector<Vector>(U.begin()+1,U.end());
