@@ -61,13 +61,21 @@ namespace bnc {
 	    for (int i=0; i<len; i++) {		
 		hU[i] = nth(A,i)*U[i];
 		hS[i] = nth(A,i)*S[i]*nth(A,i).transpose() + nth(Sw,i);
-//		K = hS[i] * nth(C,i).transpose() *
-//		    (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).inverse(); // FIXME: use solve and Cholesky
+		// /*
+		//  * Use naive inverse. slower by may be safer
+		// */
+		// K = hS[i] * nth(C,i).transpose() *
+		//    (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).inverse();
 		K = (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).llt()
 		    .solve(nth(C,i) * hS[i]).transpose();
-
-		U[i+1] = hU[i] + K*(y.col(i)-nth(C,i)*hU[i]);	       
-		S[i+1] = hS[i] - K*nth(C,i)*hS[i];
+		U[i+1] = hU[i] + K*(y.col(i)-nth(C,i)*hU[i]);
+		S[i+1] = hS[i] - (K*nth(C,i)*hS[i]);
+		// /*
+		//  * Force S[i+1] to be symmetric (due to numerical error)
+		//  * seems not needed
+		// */
+		// S[i+1].triangularView<Eigen::Lower>()
+		// = S[i+1].transpose().triangularView<Eigen::Lower>();
 	    }
 	}
 
@@ -87,7 +95,7 @@ namespace bnc {
 //		L   = S[i+1]*nth(A,i).transpose()*hS[i+1].inverse(); // FIXME: use solve and Cholesky
 		L   = hS[i+1].llt().solve(nth(A,i)*S[i+1]).transpose();
 		E   = U[i+1] + L*(ret.col(i+1)-hU[i+1]);
-		Var = S[i+1] - L*hS[i+1].inverse()*nth(A,i)*S[i+1];
+		Var = S[i+1] - L*nth(A,i)*S[i+1];
                 ret.col(i) = rmvnorm(E, Var, rng);
             }
 
