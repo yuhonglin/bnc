@@ -168,6 +168,8 @@ namespace bnc {
     // 	Vector is = 1./m.diagonal().array().sqrt();
     // 	return (m.array().rowwise()*is.transpose().array()).array().colwise()*is.array();
     // }
+
+    // imitate R's seq function.
     
 } // namespace bnc
 

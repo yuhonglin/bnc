@@ -1,6 +1,12 @@
 #ifndef DIST_H
 #define DIST_H
 
+namespace bnc {
+    enum SCALE { NORMAL=0, LOG=1 };
+    enum TAIL { UPTAIL=0, LOWTAIL=1 };
+    enum DECOM { EIGEN_DECOM, CHOL_DECOM};
+}  // namespace bnc
+
 #include "matrix/matrix.hh"
 #include "dist/unif.hh"
 #include "dist/norm.hh"
@@ -20,15 +26,8 @@
 #include "dist/chisq.hh"
 
 // multivariate
-#include "mvnorm.hh"
-#include "tmvnorm.hh"
-#include "wishart.hh"
-
-namespace bnc {
-    enum SCALE { NORMAL=0, LOG=1 };
-    enum TAIL { UPTAIL=0, LOWTAIL=1 };
-    enum DECOM { EIGEN_DECOM, CHOL_DECOM};
-}  // namespace bnc
-
+//#include "mvnorm.hh"
+//#include "tmvnorm.hh"
+//#include "wishart.hh"
 
 #endif /* DIST_H */

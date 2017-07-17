@@ -13,8 +13,8 @@ extern "C" {
 
 namespace bnc {
     /* D function */
-    double dinvgamma(const double& x, const double &a,
-		     const double&scale, const int& give_log) {
+    double dinvgamma(const double& x, const double &shape,
+		     const double&scale, const SCALE& give_log) {
 	if (shape <=0 or scale <= 0) {
 	    LOG_WARNING("Invalid inputs, return NaN");
 	    return NaN;
@@ -26,7 +26,7 @@ namespace bnc {
 	double log_density = alpha * std::log(beta)
 	    - lgamma(alpha) - (alpha+1)*std::log(x) - (beta/x);
 
-	if (give_log==0) {
+	if (give_log==NORMAL) {
 	    return std::exp(log_density);
 	} else {
 	    return log_density;

@@ -14,7 +14,6 @@
 #include <dist/norm.hh>
 #include <dist/mvnorm.hh>
 #include <dist/chisq.hh>
-#include <dist/mvnorm.hh>
 
 #define TRUNCATEDNORMAL_IDENTICAL
 
@@ -24,7 +23,7 @@ namespace bnc {
 	// I do not know why the old one computes
 	// this way?
 	template <class T>
-	typename enable_if<is_class<T>::value,Vector>::type
+	typename std::enable_if<std::is_class<T>::value,Vector>::type
 	lnNpr(T &a, T &b) {
 	    double mu = 0;
 	    double s = 1;
