@@ -79,18 +79,10 @@ namespace bnc {
 		// /*
 		//  * Use naive inverse. slower by may be safer
 		// */
-		// K = hS[i] * nth(C,i).transpose() *
-		//    (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).inverse();
 		K = (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).llt()
 		    .solve(nth(C,i) * hS[i]).transpose();
 		U[i+1] = hU[i] + K*(y.col(i)-nth(C,i)*hU[i]);
 		S[i+1] = hS[i] - (K*nth(C,i)*hS[i]);
-		// /*
-		//  * Force S[i+1] to be symmetric (due to numerical error)
-		//  * seems not needed
-		// */
-		// S[i+1].triangularView<Eigen::Lower>()
-		// = S[i+1].transpose().triangularView<Eigen::Lower>();
 	    }
 	}
 
@@ -150,26 +142,26 @@ namespace bnc {
 		    const DynCovType& Sw, const ObsCovType& Sv,
 		    const Vector& m0, const Matrix& C0) {
 	    filter(y, A, C, Sw, Sv, m0, C0);
-	    sU.resize(y.cols());
-	    sS.resize(y.cols());
+	    sU.resize(y.cols()+1);
+	    sS.resize(y.cols()+1);
 
 	    Matrix L(S[0].rows(),hS[0].rows());
-	    sU[len-1] = U[len];
-	    sS[len-1] = S[len];
-	    for (int i = len-2; i>=0; i--) {
+	    sU[len] = U[len];
+	    sS[len] = S[len];
+	    for (int i = len-1; i>=0; i--) {
 		// L      = S[i+1]*nth(A,i).transpose()*hS[i+1].inverse(); // FIXME: use solve and Cholesky
-		L      = (hS[i+1].llt().solve(nth(A,i)*S[i+1])).transpose();
-		sU[i]  = U[i+1] + L*(sU[i+1] - hU[i+1]);
-		sS[i]  = S[i+1] + L*(sS[i+1] - hS[i+1])*L.transpose();
+		L      = (hS[i].llt().solve(nth(A,i)*S[i])).transpose();
+		sU[i]  = U[i] + L*(sU[i+1] - hU[i]);
+		sS[i]  = S[i] + L*(sS[i+1] - hS[i])*L.transpose();
             }
 	}
 
 	std::vector<Vector> getFilterMean() {
-	    return std::vector<Vector>(U.begin()+1,U.end());
+	    return std::vector<Vector>(U.begin(),U.end());
 	}
 
 	std::vector<Matrix> getFilterCov() {
-	    return std::vector<Matrix>(S.begin()+1,S.end());
+	    return std::vector<Matrix>(S.begin(),S.end());
 	}
 
 	std::vector<Vector> getSmoothMean() {
