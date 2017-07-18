@@ -47,7 +47,7 @@ namespace bnc {
 
 	double e, p, q, r, t, u, v, w, x, ret_val;
 
-	if (!isfinite(a) || !isfinite(scale) || a < 0.0 || scale <= 0.0) {
+	if (!std::isfinite(a) || !std::isfinite(scale) || a < 0.0 || scale <= 0.0) {
 	    if(scale == 0.) return 0.;
 	    ML_ERR_return_NAN;
 	}

@@ -154,14 +154,14 @@ namespace bnc {
 		sU[i]  = U[i] + L*(sU[i+1] - hU[i]);
 		sS[i]  = S[i] + L*(sS[i+1] - hS[i])*L.transpose();
             }
-	}
+        }
 
 	std::vector<Vector> getFilterMean() {
-	    return std::vector<Vector>(U.begin(),U.end());
+  	    return U;
 	}
 
 	std::vector<Matrix> getFilterCov() {
-	    return std::vector<Matrix>(S.begin(),S.end());
+	    return S;
 	}
 
 	std::vector<Vector> getSmoothMean() {

@@ -40,7 +40,7 @@ M read_csv (const std::string & path) {
     }
     std::string line;
     std::vector<double> values;
-    uint rows = 0;
+    int rows = 0;
     while (std::getline(indata, line)) {
         std::stringstream lineStream(line);
         std::string cell;

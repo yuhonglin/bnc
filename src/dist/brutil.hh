@@ -41,11 +41,11 @@ typedef enum { FALSE = 0, TRUE } Rboolean;
     }
 
     inline bool R_FINITE(const double &x) {
-	return isfinite(x);
+      return std::isfinite(x);
     }
 
     inline bool ISNAN(const double &x) {
-	return isnan(x);
+      return std::isnan(x);
     }
 
     template<class T>

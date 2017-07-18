@@ -16,7 +16,7 @@ namespace bnc {
     template<class RNGType>
     double runif(const double& a, const double& b, RNGType *rng)
     {
-	if (!isfinite(a) || !isfinite(b) || b < a)
+	if (!std::isfinite(a) || !std::isfinite(b) || b < a)
 	    ML_ERR_return_NAN;
 
 	if (a == b)
