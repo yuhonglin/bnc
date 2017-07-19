@@ -2,6 +2,7 @@
 #define TEXT_H
 
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 #include <iomanip>
@@ -21,17 +22,42 @@ namespace bnc {
 		ofs.close();
 	    }
 
-	    bnc::Vector load(const std::string& fn) {
-		std::ifstream infile(fn);
-		double x;
-		std::vector<double> tmp;
-		while(infile >> x) {
-		    tmp.push_back(x);
+	    bnc::Matrix load(const std::string& fn) {
+		std::ifstream infile;
+		infile.open(fn);
+		if(!infile.good()) {
+		  LOG_WARNING(fn);
+		  return Matrix(0,0);
 		}
-		Vector ret(tmp.size());
-		for (int i=0; i<tmp.size(); i++) {
-		    ret(i) = tmp[i];
+		
+		int lineIdx = 0;
+		int ncols = 0;
+		int prevlen = 0;
+		double n;
+		std::vector<double> nums;
+		std::string line;
+		while (std::getline(infile, line)) {
+		  std::stringstream lineStream(line);		  
+		  while(lineStream >> n) {
+		    nums.push_back(n);
+		  }
+		  if (ncols==0) {
+		    ncols = nums.size();
+		  } else if (ncols != nums.size()-prevlen) {
+		    LOG_WARNING(std::string("not squared: ") + fn
+				+ std::string(", return empty matrix"));
+		    return Matrix(0,0);
+		  }
+		  prevlen = nums.size();
 		}
+
+		Matrix ret(nums.size()/ncols,ncols);
+		for (int i=0; i<nums.size()/ncols; i++) {
+		  for (int j=0; j<ncols; j++) {
+		    ret(i,j) = nums[i*ncols+j];
+		  }
+		}
+		
 		return ret;
 	    }
 	}  // namespace text
