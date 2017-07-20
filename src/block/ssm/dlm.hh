@@ -42,7 +42,7 @@ namespace bnc {
 	inline T& nth(T& v, const int& n) {
 	    return v;
 	}
-	
+
     public:
 	DLM() {
 	}
@@ -63,16 +63,15 @@ namespace bnc {
 	void filter(const Matrix & y, const DynMatType& A, const ObsMatType& C,
 		    const DynCovType& Sw, const ObsCovType& Sv,
 		    const Vector& m0, const Matrix& C0) {
-	  // safety checking
-	  ASSERT_MSG(y.rows() == C.rows(), "y.rows() != C.rows()");
-	  ASSERT_MSG(A.rows() == A.cols(), "A.rows() != A.cols()");	  
-	  ASSERT_MSG(A.rows() == C.cols(), "A.rows() != C.cols()");
-	  ASSERT_MSG(Sw.rows() == A.rows(), "W.rows() != A.rows()");
-	  ASSERT_MSG(Sv.rows() == C.rows(), "V.rows() != C.rows()");
-	  ASSERT_MSG(Sw.rows() == Sw.rows(), "W.rows() != W.rows()");
-	  ASSERT_MSG(Sv.rows() == Sv.rows(), "V.rows() != V.rows()");	  	  	  
+	    // safety checking
+	    ASSERT_MSG(y.rows() == C.rows(), "y.rows() != C.rows()");
+	    ASSERT_MSG(A.rows() == A.cols(), "A.rows() != A.cols()");	  
+	    ASSERT_MSG(A.rows() == C.cols(), "A.rows() != C.cols()");
+	    ASSERT_MSG(Sw.rows() == A.rows(), "W.rows() != A.rows()");
+	    ASSERT_MSG(Sv.rows() == C.rows(), "V.rows() != C.rows()");
+	    ASSERT_MSG(Sw.rows() == Sw.rows(), "W.rows() != W.rows()");
+	    ASSERT_MSG(Sv.rows() == Sv.rows(), "V.rows() != V.rows()");	  	  	  
 
-	  
 	    const int length = y.cols()+1;
 	    len = y.cols();
 	    S.resize(length);
@@ -82,15 +81,39 @@ namespace bnc {
 	    U[0] = m0;
 	    S[0] = C0;
 
-	    Matrix K(nth(A,0).rows(), Sv.cols());
-	    for (int i=0; i<len; i++) {		
-		hU[i] = nth(A,i)*U[i];
-		hS[i] = nth(A,i)*S[i]*nth(A,i).transpose() + nth(Sw,i);
 
-		K = (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).llt()
-		    .solve(nth(C,i) * hS[i]).transpose();
-		U[i+1] = hU[i] + K*(y.col(i)-nth(C,i)*hU[i]);
-		S[i+1] = hS[i] - (K*nth(C,i)*hS[i]);
+	    if (is_special<ObsCovType, std::vector>::value!=true &&
+		Sv.rows() > nth(Sw,0).rows()) {
+		// In this case the normal Kalman filter is slow
+		// because it has to invert a Matrix of dim=dim(Sv)
+		// So we use another formula which inverse matrix
+		// of dimension dim(Sw)
+		Matrix iV = Sv.llt().solve(Matrix::Identity(Sv.rows(), Sv.rows()));
+		Matrix ihS = Matrix(nth(Sw,0).rows(), nth(Sw,0).rows());
+		for (int i=0; i<len; i++) {
+		    // prior update
+		    hU[i] = nth(A,i)*U[i];
+		    hS[i] = nth(A,i)*S[i]*nth(A,i).transpose() + nth(Sw,i);
+		    // measurement update
+		    ihS = hS[i].llt()
+			.solve(Matrix::Identity(nth(Sw,i).rows(), nth(Sw,i).rows()));
+		    S[i+1] = (nth(C,i).transpose()*iV*nth(C,i) + ihS).llt()
+			.solve(Matrix::Identity(nth(Sw,i).rows(), nth(Sw,i).rows()));
+		    U[i+1] = S[i+1]*(ihS*hU[i]+nth(C,i).transpose()*iV*y.col(i));
+		}
+	    } else {
+		// Use normal Kalman filter
+		Matrix K(nth(A,0).rows(), Sv.cols());
+		for (int i=0; i<len; i++) {
+		    // prior update
+		    hU[i] = nth(A,i)*U[i];
+		    hS[i] = nth(A,i)*S[i]*nth(A,i).transpose() + nth(Sw,i);
+		    // measurement update
+		    K = (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).llt()
+			.solve(nth(C,i) * hS[i]).transpose();
+		    U[i+1] = hU[i] + K*(y.col(i)-nth(C,i)*hU[i]);
+		    S[i+1] = hS[i] - (K*nth(C,i)*hS[i]);
+		}
 	    }
 	}
 
