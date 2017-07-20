@@ -552,7 +552,7 @@ void do_sample(const int& n, const Data &data, Param &param, RNGType *rng) {
 	G.bottomRightCorner(data.J, data.J).diagonal() = param.Phi;
 	V.diagonal().array() = param.sigma2_v;
 
-	COUT(ct.rightCols(3));
+	//COUT(ct.rightCols(3));
 	
 	theta_alpha
 	    = dlm.sample(ct.transpose(), G, F, W, V, data.m0, data.C0, rng)
@@ -578,9 +578,6 @@ void do_sample(const int& n, const Data &data, Param &param, RNGType *rng) {
 	    .solve(bnc::Matrix::Identity(data.J, data.J));
 	m_Phi = C_Phi * temp2;
 
-	COUT(temp1);
-	COUT(temp2);
-	
 	param.Phi = bnc::rtmvnorm(1, m_Phi, C_Phi, l_Phi, u_Phi, rng);
 
 	// save(param.Phi)
@@ -593,14 +590,17 @@ void do_sample(const int& n, const Data &data, Param &param, RNGType *rng) {
 	    * data.scaled_weight.transpose();
 	T_t1 = xt - data.cost*param.Almp_s.transpose() -
 	    data.sint*(param.Almp_s.array()*param.gamma_s.array()).matrix().transpose();
-        // tt1 = data.T*1'
-	tt2 = T_t1.colwise().sum().transpose().array()*data.T;
+
+        // tt1 = diag(data.T*1')
+	tt2 = T_t1.colwise().sum().transpose();
 	invexpDmu = (-data.D.array() / param.lambda_mu).exp()
 	    .matrix().llt().solve(bnc::Matrix::Identity(data.S, data.S));
+
 	// C.mu.s
 	cmustmp = (param.psi_mu * invexpDmu.array()).matrix();
 	cmustmp.diagonal().array() += param.psi_v * data.T;
         C_mu_s = cmustmp.llt().solve(bnc::Matrix::Identity(data.S, data.S));
+
 	// m.mu.s
 	m_mu_s = C_mu_s * (
 	    param.psi_v*tt2.array() +
