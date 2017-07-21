@@ -1,5 +1,21 @@
 // modified from the StackTrace project:
 // https://sourceforge.net/projects/stacktrace/
+// Usage:
+//      1. Declare a CallStack variable, e.g., ```cs```
+//      2. cout << cs.to_string() << endl;
+//
+// For example, if we want to show the call stack
+// of LOG_WARNING in Logger, just do the following,
+// before LOG_WARNING is called,
+//
+// ```C++
+// Logger.showWarningCallback = []() {
+//    CallStack cs;
+//    std::cout << cs.to_string() << std::endll;
+// }
+// ```
+//
+
 #ifndef BACKTRACE_H
 #define BACKTRACE_H
 
