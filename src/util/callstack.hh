@@ -49,7 +49,7 @@ namespace bnc {
 	/** Serialize entry into a text string. */
 	std::string to_string () const {
 	    std::ostringstream os;
-	    os << file << " (" << line << "): " << function;
+	    os << file << " : " << function;
 	    return os.str();
 	}
     };
