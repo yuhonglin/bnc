@@ -14,6 +14,8 @@
 #define REMBED_H
 
 #include <iostream>
+#include <vector>
+#include <type_traits>
 #include <cstdio>
 
 #include <matrix/matrix.hh>
@@ -28,7 +30,27 @@ extern "C" {
 #undef length
 
 namespace bnc {
-    
+
+    class REmbed;
+
+    struct REnvironment {
+
+	std::string name;
+	REmbed * ptr_r;
+	
+	REnvironment(REmbed* r, const std::string& n)
+	    : ptr_r(r), name(n) {}
+	
+	REnvironment(const REnvironment& r) {
+	    name = r.name;
+	    ptr_r = r.ptr_r;
+	}
+	
+	template<class T> T& operator= (T& t);
+
+    };
+
+  
     class REmbed
     {
     public:
@@ -79,9 +101,9 @@ namespace bnc {
 				    R_GlobalEnv, &errorOccurred);
 		    if (errorOccurred) {
 			LOG_WARNING("Evaluating R code failed");
+			UNPROTECT(2);
+			return PARSE_ERR;
 		    }
-		    UNPROTECT(2);
-		    return PARSE_ERR;
 		}
 		break;
 	    case PARSE_INCOMPLETE:
@@ -140,7 +162,7 @@ namespace bnc {
 		return INVALID_OUTPUT;
 	    }
 	}
-	Status eval(const std::string & line, Matrix & m) {
+	Status eval(const std::string & line, Matrix & m) {	    
 	    SEXP ans;
 	    Status rc = eval(line, ans);
 	    if (rc != SUCCESS)
@@ -148,13 +170,15 @@ namespace bnc {
 
 	    if (isNumeric(ans) && isMatrix(ans) && !isComplex(ans)) {
 		SEXP dims;
-		Rf_dimgets(ans, dims);
+		PROTECT(dims = allocVector(INTSXP, 2));
+		dims = getAttrib(ans, R_DimSymbol);
 		m.resize(INTEGER(dims)[0], INTEGER(dims)[1]);
 		for (int i=0; i<INTEGER(dims)[0]; i++) {
 		    for (int j=0; j<INTEGER(dims)[1]; j++) {
 			m(i,j) = REAL(ans)[j+i*INTEGER(dims)[1]];
 		    }
 		}
+		UNPROTECT(1);
 		return SUCCESS;
 	    } else {
 		return INVALID_OUTPUT;
@@ -207,9 +231,31 @@ namespace bnc {
 	    Rf_defineVar(variableName, data, R_GlobalEnv);
 	    UNPROTECT(2);
 	}
-    
+	template<class T>
+	typename std::enable_if<std::is_arithmetic<T>::value, void>::type
+	define_var(const std::string& n, const std::vector<T>& v) {
+	    SEXP data, variableName;
+	    PROTECT(data = Rf_allocVector(REALSXP, v.size()));
+	    for(int i=0; i<v.size(); i++)
+		REAL(data)[i] = v[i];
+	    variableName = PROTECT(Rf_install(n.c_str()));
+	    Rf_defineVar(variableName, data, R_GlobalEnv);
+	    UNPROTECT(2);	    
+	}
+
+	// bracket sugar
+	REnvironment operator[] (const std::string& n) {
+	    return REnvironment(this, n);
+	}
     };
 
+    template<class T>
+    T& REnvironment::operator= (T& t) {
+	ptr_r->define_var(name, t);
+	return t;
+    }
+
+    
 }  // namespace bnc
 
 #endif /* REMBED_H */
