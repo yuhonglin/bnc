@@ -1,5 +1,7 @@
 /*
  *  REmbed: embed an r in c++ program.
+ *  
+ *  This class provides "RInside"-like interfaces.
  *    
  *  Motivation: everytime some simulation is done,
  *  we would like to do some post-analysis on the
@@ -244,6 +246,9 @@ namespace bnc {
 	}
 
 	// bracket sugar
+	// Usage
+	// Rembed["varname"] = var;
+	// but not support var = Rembed["varname"]
 	REnvironment operator[] (const std::string& n) {
 	    return REnvironment(this, n);
 	}

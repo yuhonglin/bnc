@@ -95,9 +95,9 @@ namespace bnc {
 		    hU[i] = nth(A,i)*U[i];
 		    hS[i] = nth(A,i)*S[i]*nth(A,i).transpose() + nth(Sw,i);
 		    // measurement update
-		    ihS = hS[i].llt()
+		    ihS = hS[i].ldlt()
 			.solve(Matrix::Identity(nth(Sw,i).rows(), nth(Sw,i).rows()));
-		    S[i+1] = (nth(C,i).transpose()*iV*nth(C,i) + ihS).llt()
+		    S[i+1] = (nth(C,i).transpose()*iV*nth(C,i) + ihS).ldlt()
 			.solve(Matrix::Identity(nth(Sw,i).rows(), nth(Sw,i).rows()));
 		    U[i+1] = S[i+1]*(ihS*hU[i]+nth(C,i).transpose()*iV*y.col(i));
 		}
@@ -109,7 +109,7 @@ namespace bnc {
 		    hU[i] = nth(A,i)*U[i];
 		    hS[i] = nth(A,i)*S[i]*nth(A,i).transpose() + nth(Sw,i);
 		    // measurement update
-		    K = (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).llt()
+		    K = (nth(C,i)*hS[i]*nth(C,i).transpose() + nth(Sv,i)).ldlt()
 			.solve(nth(C,i) * hS[i]).transpose();
 		    U[i+1] = hU[i] + K*(y.col(i)-nth(C,i)*hU[i]);
 		    S[i+1] = hS[i] - (K*nth(C,i)*hS[i]);
@@ -147,7 +147,7 @@ namespace bnc {
 	    Vector E(U[0].rows());
 	    ret.col(len) = rmvnorm<VARIANCE,CHOL_DECOMP>(U[len], S[len], rng);
 	    for (int i = len-1; i>=0; i--) {
-		L   = hS[i].llt().solve(nth(A,i)*S[i]).transpose();
+		L   = hS[i].ldlt().solve(nth(A,i)*S[i]).transpose();
 		E   = U[i] + L*(ret.col(i+1)-hU[i]);
 		Var = S[i] - L*nth(A,i)*S[i];
                 ret.col(i) = rmvnorm<VARIANCE,CHOL_DECOMP>(E, Var, rng);

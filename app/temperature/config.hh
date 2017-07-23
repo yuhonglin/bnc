@@ -16,7 +16,7 @@ public:
     double outer_delta_lambda_gamma;
     double outer_delta_lambda_Almp;
 
-    string data_path;
+    std::string data_path;
     
     std::map<std::string, bnc::Matrix> data; // store data loaded from disk
 };

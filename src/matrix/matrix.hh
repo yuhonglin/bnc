@@ -6,7 +6,10 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
+#include <type_traits>
+
 #include <Eigen/Dense>
+#include <cereal/cereal.hpp>
 
 namespace bnc {
     const int Dynamic = Eigen::Dynamic;

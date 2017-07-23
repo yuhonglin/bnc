@@ -161,7 +161,7 @@ void do_sample(const int& n, const Data &data, Param &param, std::vector<Param> 
     bnc::Vector vt(data.S);
     
     for (int MC = 0; MC < n; MC++) {
-	if (MC%1==0)
+	if (MC%1000==0)
 	    std::cout << "MC : " << MC << std::endl;
 	if (MC==1021) {
 //	    ofstream opf("param.cereal");
@@ -567,26 +567,33 @@ int main(int argc, char *argv[])
 
     int N = 50000;
     Data  data(config);    
-    Param param(config, data, &rng);
+//    Param param(config, data, &rng);
+    Param param;
+    std::ifstream pif("./tailparam_error.cereal");    
+    cereal::BinaryInputArchive iarchive(pif);     
+    iarchive(param);
+
+    
     std::vector<Param> store; store.reserve(N);
 
-    global_param_ptr = &param;
-    global_store_ptr = &store;
-    // set logger level
-    // make warning throw then enable debug
-    auto cbsave = [](const char *message) {
-	ofstream pof("./store_error.cereal");
-	cereal::BinaryOutputArchive oarchive(pof);
-	oarchive(*global_store_ptr);
-	std::cout << message << std::endl;
-	exit(1);
-    };
+//    global_param_ptr = &param;
+//    global_store_ptr = &store;
+//    set logger level
+//    make warning throw then enable debug
+//    auto cbsave = [](const char *message) {
+//	ofstream pof("./store_error.cereal");
+//	cereal::BinaryOutputArchive oarchive(pof);
+//	oarchive(*global_store_ptr);
+//	pof.flush();
+//	std::cout << message << std::endl;
+//	throw runtime_error(message);
+//    };
 
-    bnc::Logger::showFatalCallback = cbsave;    
-    bnc::Logger::showWarningCallback = cbsave;
-    bnc::Logger::showErrorCallback = cbsave;
-    bnc::Logger::showStatusCallback = cbsave;
-    bnc::Logger::showMessageCallback = cbsave;
+//    bnc::Logger::showFatalCallback = cbsave;    
+//    bnc::Logger::showWarningCallback = cbsave;
+//    bnc::Logger::showErrorCallback = cbsave;
+//    bnc::Logger::showStatusCallback = cbsave;
+//    bnc::Logger::showMessageCallback = cbsave;
 
     bnc::tic();
     do_sample(N, data, param, store, &rng);

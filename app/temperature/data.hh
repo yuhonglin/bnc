@@ -180,7 +180,7 @@ public:
 	    kernel_dist = 275;
 	    break;
 	default:
-	    cerr << "Unsupported number of kernels: " << config.J << endl;
+	    std::cerr << "Unsupported number of kernels: " << config.J << std::endl;
 	    exit(1);
 	}
 	for (int j=0; j<config.J; j++) {

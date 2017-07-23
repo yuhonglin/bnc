@@ -213,6 +213,9 @@ public:
       count_lambda_gamma = p.count_lambda_gamma;
     }
 
+    Param() {
+    }
+    
 }; // class param
 
 #endif /* PARAM_H */
