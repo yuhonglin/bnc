@@ -17,6 +17,7 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 #include <type_traits>
 #include <cstdio>
 
@@ -233,6 +234,7 @@ namespace bnc {
 	    Rf_defineVar(variableName, data, R_GlobalEnv);
 	    UNPROTECT(2);
 	}
+	// for std::vector<int>, std::vector<double> etc.
 	template<class T>
 	typename std::enable_if<std::is_arithmetic<T>::value, void>::type
 	define_var(const std::string& n, const std::vector<T>& v) {
@@ -244,7 +246,108 @@ namespace bnc {
 	    Rf_defineVar(variableName, data, R_GlobalEnv);
 	    UNPROTECT(2);	    
 	}
+	// define a name list of vectors
+	void define_var(const std::string& n, std::map<std::string, Vector> m) {
+	    SEXP nms = PROTECT(allocVector(STRSXP, m.size()));
+	    SEXP res = PROTECT(allocVector(VECSXP, m.size()));
+	    int i = 0;
+	    for (auto& kv : m) {
+		// set name
+		SET_STRING_ELT(nms, i, Rf_mkCharLen(kv.first.c_str(),kv.first.size()));
+		// set value
+		SEXP elem = PROTECT(allocVector(REALSXP, kv.second.size()));
+		std::memcpy(REAL(elem), kv.second.data(),
+			    sizeof(double)* kv.second.size());
+		SET_VECTOR_ELT(res, i, elem);
+		UNPROTECT(1);
+		i++;
+	    }
+	    setAttrib(res, R_NamesSymbol, nms);
+	    SEXP variableName = PROTECT(Rf_install(n.c_str()));
+	    Rf_defineVar(variableName, res, R_GlobalEnv);
+	    UNPROTECT(3);
+	}
+	// define a coda mcmc.list object
+	SEXP map_to_coda_mcmc(std::map<std::string, Vector> m, const int& start=1,
+			      int end=0, const int& thin=1) {
 
+	    if (m.size() != 0) {
+		end = start + (m.begin()->second.size()-1)*thin;
+	    }
+
+	    SEXP res = PROTECT(allocVector(VECSXP, m.size()));
+	    SEXP nms = PROTECT(allocVector(STRSXP, m.size()));
+	    SEXP cls = PROTECT(allocVector(STRSXP, 1));
+	    SEXP attname = PROTECT(allocVector(STRSXP, 1));
+	    int i = 0;
+	    for (auto& kv : m) {
+		// set name
+		SET_STRING_ELT(nms, i, Rf_mkCharLen(kv.first.c_str(),kv.first.size()));
+		// set value
+		SEXP elem = PROTECT(allocVector(REALSXP, kv.second.size()));
+		std::memcpy(REAL(elem), kv.second.data(),
+			    sizeof(double)* kv.second.size());
+		SET_VECTOR_ELT(res, i, elem);
+		UNPROTECT(1);
+		i++;
+	    }
+	    // set class name
+	    setAttrib(res, R_NamesSymbol, nms);
+	    SET_STRING_ELT(cls, 0, Rf_mkChar("mcmc"));
+	    setAttrib(res, R_ClassSymbol, cls);
+	    // define the mcpar field
+	    SET_STRING_ELT(attname, 0, Rf_mkChar("mcpar"));
+	    SEXP mcpar = PROTECT(allocVector(REALSXP, 3));
+	    REAL(mcpar)[0] = static_cast<double>(start);
+	    REAL(mcpar)[1] = static_cast<double>(end);
+	    REAL(mcpar)[2] = static_cast<double>(thin);
+	    setAttrib(res, attname, mcpar);
+	    UNPROTECT(5);
+	    
+	    return res;
+	}
+	// define a coda mcmc object
+	void define_coda_mcmc(const std::string& n, std::map<std::string, Vector> m,
+			      const int& start=1, int end=0, const int& thin=1) {
+	    if (library("coda")!=SUCCESS) {
+		LOG_WARNING("Coda package not installed, do nothing");
+		return;
+	    }
+
+	    if (m.size() != 0) {
+		end = start + (m.begin()->second.size()-1)*thin;
+	    }
+
+	    SEXP res = PROTECT(map_to_coda_mcmc(m, start, end, thin));
+
+	    // define the list in global environment
+	    SEXP variableName = PROTECT(Rf_install(n.c_str()));
+	    Rf_defineVar(variableName, res, R_GlobalEnv);
+	    UNPROTECT(3);
+	}
+	// define a coda mcmc.list object
+	void define_coda_mcmc_list(const std::string& n,
+				   std::vector<std::map<std::string, Vector>> ml,
+				   const int& start=1,
+				   int end=0,
+				   const int& thin=1) {
+	    SEXP res = PROTECT(allocVector(VECSXP, ml.size()));
+	    for (int i = 0; i < ml.size(); i++) {
+		SEXP mcmc = PROTECT(map_to_coda_mcmc(ml[i], start, end, thin));
+		SET_VECTOR_ELT(res, i, mcmc);
+		UNPROTECT(1);
+	    }
+
+	    SEXP cls = PROTECT(allocVector(STRSXP, 1));
+	    SET_STRING_ELT(cls, 0, Rf_mkChar("mcmc.list"));
+	    setAttrib(res, R_ClassSymbol, cls);
+
+	    // define the list in global environment
+	    SEXP variableName = PROTECT(Rf_install(n.c_str()));
+	    
+	    Rf_defineVar(variableName, res, R_GlobalEnv);
+	    UNPROTECT(3);
+	}
 	// bracket sugar
 	// Usage
 	// Rembed["varname"] = var;
