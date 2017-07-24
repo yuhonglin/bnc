@@ -268,7 +268,9 @@ namespace bnc {
 	    UNPROTECT(3);
 	}
 	// define a coda mcmc.list object
-	SEXP map_to_coda_mcmc(std::map<std::string, Vector> m, const int& start=1,
+	// T can be std::vector or bnc::Vector
+	template<class T>
+	SEXP map_to_coda_mcmc(std::map<std::string, T> m, const int& start=1,
 			      int end=0, const int& thin=1) {
 
 	    if (m.size() != 0) {
@@ -307,7 +309,8 @@ namespace bnc {
 	    return res;
 	}
 	// define a coda mcmc object
-	void define_coda_mcmc(const std::string& n, std::map<std::string, Vector> m,
+	template<class T>
+	void define_coda_mcmc(const std::string& n, std::map<std::string, T> m,
 			      const int& start=1, int end=0, const int& thin=1) {
 	    if (library("coda")!=SUCCESS) {
 		LOG_WARNING("Coda package not installed, do nothing");
@@ -326,8 +329,9 @@ namespace bnc {
 	    UNPROTECT(3);
 	}
 	// define a coda mcmc.list object
+	template<class T>
 	void define_coda_mcmc_list(const std::string& n,
-				   std::vector<std::map<std::string, Vector>> ml,
+				   std::vector<std::map<std::string, T>> ml,
 				   const int& start=1,
 				   int end=0,
 				   const int& thin=1) {
