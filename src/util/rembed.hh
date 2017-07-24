@@ -10,6 +10,17 @@
  *  anytime. And it provide interfaces to define data
  *  to the R global environment before entering repl.
  *
+ *  Usage
+ *     1. Add compilation include path
+ *  [on Mac] for example,
+ *     -I/opt/local/Library/Frameworks/R.framework/Headers/
+ *     2. Add library path
+ *  [on Mac] for example,
+ *     -L/opt/local/Library/Frameworks/R.framework/Libraries/
+ *     3. Add R library in compilation: -lR
+ *     4. Set R_HOME environment variable
+ *  [on Mac] for example,
+ *     export R_HOME=/opt/local/Library/Frameworks/R.framework/Resources/
  */
 
 #ifndef REMBED_H
