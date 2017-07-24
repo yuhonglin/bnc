@@ -42,6 +42,8 @@ extern "C" {
 }
 
 #undef length
+#undef ncols
+#undef nrows
 
 namespace bnc {
 
@@ -376,6 +378,18 @@ namespace bnc {
 				   const int& start=1,
 				   int end=0,
 				   const int& thin=1) {
+	    if (library("coda")!=SUCCESS) {
+		LOG_WARNING("Coda package not installed, do nothing");
+		return;
+	    }
+
+	    if (ml.size() <= 0 || ml[0].size() <= 0) {
+		LOG_WARNING("Empty input, do nothing");
+		return;
+	    }
+	    
+	    end = start + (ml[0].begin()->second.size()-1)*thin;
+	    
 	    SEXP res = PROTECT(allocVector(VECSXP, ml.size()));
 	    for (int i = 0; i < ml.size(); i++) {
 		SEXP mcmc = PROTECT(map_to_coda_mcmc(ml[i], start, end, thin));
