@@ -278,20 +278,12 @@ namespace bnc {
 	    Rf_defineVar(variableName, res, R_GlobalEnv);
 	    UNPROTECT(3);
 	}
-	// define a coda mcmc.list object
-	// T can be std::vector or bnc::Vector
+	// define a named list of vectors from map
 	template<class T>
-	SEXP map_to_coda_mcmc(std::map<std::string, T> m, const int& start=1,
-			      int end=0, const int& thin=1) {
-
-	    if (m.size() != 0) {
-		end = start + (m.begin()->second.size()-1)*thin;
-	    }
+	void define_var(const std::string& n, std::map<std::string, T> m) {
 
 	    SEXP res = PROTECT(allocVector(VECSXP, m.size()));
 	    SEXP nms = PROTECT(allocVector(STRSXP, m.size()));
-	    SEXP cls = PROTECT(allocVector(STRSXP, 1));
-	    SEXP attname = PROTECT(allocVector(STRSXP, 1));
 	    int i = 0;
 	    for (auto& kv : m) {
 		// set name
@@ -306,18 +298,57 @@ namespace bnc {
 	    }
 	    // set class name
 	    setAttrib(res, R_NamesSymbol, nms);
+	    // define the list in global environment
+	    SEXP variableName = PROTECT(Rf_install(n.c_str()));
+	    Rf_defineVar(variableName, res, R_GlobalEnv);
+
+	    UNPROTECT(3);
+	}
+	// get a coda mcmc list
+	template<class T>
+	SEXP map_to_coda_mcmc(std::map<std::string, T> m, const int& start=1,
+			      int end=0, const int& thin=1) {
+	    if (m.size() <= 0) {
+		return R_NilValue;
+	    }
+
+	    const int nrow = m.begin()->second.size();
+	    const int ncol = m.size();
+	    
+	    SEXP ret = PROTECT(Rf_allocMatrix(REALSXP, nrow, ncol));
+	    SEXP dimnames = PROTECT(allocVector(VECSXP, 2));
+	    SEXP colnames = PROTECT(allocVector(STRSXP, ncol));
+	    int i = 0;
+	    for(auto& kv : m) {
+		// set name
+		SET_STRING_ELT(colnames, i, Rf_mkCharLen(kv.first.c_str(),kv.first.size()));
+		// set value
+		std::memcpy(REAL(ret)+i*nrow, kv.second.data(),
+			    sizeof(double)*kv.second.size());
+		i++;
+	    }
+	    SET_VECTOR_ELT(dimnames, 0, R_NilValue);
+	    SET_VECTOR_ELT(dimnames, 1, colnames); 
+	    // set column names
+	    setAttrib(ret, R_DimNamesSymbol, dimnames);
+
+	    // set class
+	    SEXP cls = PROTECT(allocVector(STRSXP, 1));
 	    SET_STRING_ELT(cls, 0, Rf_mkChar("mcmc"));
-	    setAttrib(res, R_ClassSymbol, cls);
+	    setAttrib(ret, R_ClassSymbol, cls);
+
 	    // define the mcpar field
+	    SEXP attname = PROTECT(allocVector(STRSXP, 1));
 	    SET_STRING_ELT(attname, 0, Rf_mkChar("mcpar"));
 	    SEXP mcpar = PROTECT(allocVector(REALSXP, 3));
 	    REAL(mcpar)[0] = static_cast<double>(start);
 	    REAL(mcpar)[1] = static_cast<double>(end);
 	    REAL(mcpar)[2] = static_cast<double>(thin);
-	    setAttrib(res, attname, mcpar);
-	    UNPROTECT(5);
-	    
-	    return res;
+	    setAttrib(ret, attname, mcpar);
+
+	    UNPROTECT(6);
+
+	    return ret;
 	}
 	// define a coda mcmc object
 	template<class T>
@@ -333,11 +364,10 @@ namespace bnc {
 	    }
 
 	    SEXP res = PROTECT(map_to_coda_mcmc(m, start, end, thin));
-
 	    // define the list in global environment
 	    SEXP variableName = PROTECT(Rf_install(n.c_str()));
 	    Rf_defineVar(variableName, res, R_GlobalEnv);
-	    UNPROTECT(3);
+	    UNPROTECT(2);
 	}
 	// define a coda mcmc.list object
 	template<class T>
