@@ -20,7 +20,8 @@
 #include <block/ssm/dlm.hh>
 #include <io/text.hh>
 #include <util/callstack.hh>
-
+#include <util/rembed.hh>
+#include <parallel/ThreadPool.hh>
 
 #include <cereal/cereal.hpp>
 #include <cereal/archives/binary.hpp>
@@ -71,7 +72,7 @@ bnc::Matrix crossprod(const bnc::Matrix& M) {
 
 
 template<class RNGType>
-void do_sample(const int& n, const Data &data, Param &param, std::vector<Param> &store, RNGType *rng) {
+void do_sample(const int& tid, const int& n, const Data &data, Param &param, std::vector<Param> &store, RNGType *rng) {
     bnc::Matrix ct(data.T,data.S);
     // observation matrix
     bnc::Matrix F(data.S,data.J*2); // constant during sampling
@@ -161,14 +162,8 @@ void do_sample(const int& n, const Data &data, Param &param, std::vector<Param> 
     bnc::Vector vt(data.S);
     
     for (int MC = 0; MC < n; MC++) {
-	if (MC%1000==0)
-	    std::cout << "MC : " << MC << std::endl;
-	if (MC==1021) {
-//	    ofstream opf("param.cereal");
-//	    cereal::BinaryOutputArchive oarchive(opf);
-//	    oarchive(param);
-	    std::cout << "for break" << std::endl;
-	}
+	if (MC%10==0)
+	    std::cout << "thread(" << tid << "), MC : " << MC << std::endl;
 	/*
 	 *    Module 1: sample theta.t and alpha.t
 	 */
@@ -183,8 +178,6 @@ void do_sample(const int& n, const Data &data, Param &param, std::vector<Param> 
 	G.bottomRightCorner(data.J, data.J).diagonal() = param.Phi;
 	V.diagonal().array() = param.sigma2_v;
 
-	//COUT(ct.rightCols(3));
-	
 	theta_alpha
 	    = dlm.sample(ct.transpose(), G, F, W, V, data.m0, data.C0, rng)
 	    .transpose();
@@ -480,7 +473,7 @@ void do_sample(const int& n, const Data &data, Param &param, std::vector<Param> 
 	    // Mt is just an identity matrix
 	    vt.transpose() =
 		data.yt.row(i)
-		- (data.scaled_weight * (param.theta_t.row(i+1)+param.alpha_t.row(i+1)).transpose()).transpose();
+		- (data.scaled_weight * (param.theta_t.row(i+1)+param.alpha_t.row(i+1)).transpose()).transpose()
 		- param.mu_s.transpose()
 		- (param.Almp_s.array() * (data.cost(i) + data.sint(i)*param.gamma_s.array())).matrix().transpose();
 	    temp1_v += vt.array().square().sum();
@@ -494,16 +487,68 @@ void do_sample(const int& n, const Data &data, Param &param, std::vector<Param> 
 
 	// save(psi.v)
 	// save(sigma2.v)
-	
 	store.push_back(param);
-//	COUT(param.lambda_mu);
-//	COUT(param.lambda_Almp);
-//	COUT(param.lambda_gamma);
     } // MCMC loop
 }
 
 Param * global_param_ptr;
 std::vector<Param> * global_store_ptr;
+
+#define ADD_NUM_TO_MAP(store, data, themap)		\
+    themap[#data] = bnc::Vector(store.size());		\
+    for (int i=0; i<store.size(); i++)			\
+	themap[#data](i) = store[i].data;
+
+#define ADD_VECTOR_TO_MAP(store, data, themap)		\
+    for (int j=0; j < store[0].data.size(); j++) {	\
+        std::ostringstream nms;				\
+	nms << #data << "[" << j << "]";		\
+	themap[nms.str()] = bnc::Vector(store.size());	\
+	for (int i=0; i<store.size(); i++)		\
+	    themap[nms.str()](i) = store[i].data[j];	\
+    }
+
+#define ADD_MATRIX_TO_MAP(store, data, themap)			\
+    for (int k=0; k < store[0].data.rows(); k++) {	        \
+        for (int j=0; j < store[0].data.cols(); j++) {		\
+	    std::ostringstream nms;				\
+	    nms << #data << "[" << k << "," << j << "]";	\
+	    themap[nms.str()] = bnc::Vector(store.size());	\
+	    for (int i=0; i<store.size(); i++)			\
+		themap[nms.str()](i) = store[i].data(k,j);	\
+	}							\
+    }								
+
+
+void store_to_map(const std::vector<Param>& store,
+		  std::map<std::string, bnc::Vector>& m) {
+    ADD_NUM_TO_MAP(store, sigma2_v, m);
+    ADD_NUM_TO_MAP(store, psi_mu, m);
+    ADD_NUM_TO_MAP(store, psi_mu            , m);
+    ADD_NUM_TO_MAP(store, sigma2_mu         , m);
+    ADD_NUM_TO_MAP(store, psi_Almp          , m);
+    ADD_NUM_TO_MAP(store, sigma2_Almp       , m);
+    ADD_NUM_TO_MAP(store, psi_gamma         , m);
+    ADD_NUM_TO_MAP(store, sigma2_gamma      , m);
+    ADD_NUM_TO_MAP(store, lambda_mu         , m);
+    ADD_NUM_TO_MAP(store, lambda_Almp       , m);
+    ADD_NUM_TO_MAP(store, lambda_gamma      , m);
+    ADD_NUM_TO_MAP(store, psi_v            , m);    
+    ADD_NUM_TO_MAP(store, sigma2_v, m    );
+
+    ADD_VECTOR_TO_MAP(store, mu_s      , m    );
+    ADD_VECTOR_TO_MAP(store, Almp_s    , m    );
+    ADD_VECTOR_TO_MAP(store, gamma_s   , m    );
+    ADD_VECTOR_TO_MAP(store, beta_mu   , m    );
+    ADD_VECTOR_TO_MAP(store, beta_Almp , m    );
+    ADD_VECTOR_TO_MAP(store, beta_gamma, m    );
+    ADD_VECTOR_TO_MAP(store, Phi, m    );    
+
+    ADD_MATRIX_TO_MAP(store, alpha_t, m    );
+    ADD_MATRIX_TO_MAP(store, theta_t, m    );    
+}
+
+
 
 int main(int argc, char *argv[])
 {
@@ -565,43 +610,50 @@ int main(int argc, char *argv[])
 	    alt_range;
     }
 
-    int N = 50000;
+    int N = 500;
     Data  data(config);    
-//    Param param(config, data, &rng);
-    Param param;
-    std::ifstream pif("./tailparam_error.cereal");    
-    cereal::BinaryInputArchive iarchive(pif);     
-    iarchive(param);
-
     
-    std::vector<Param> store; store.reserve(N);
+    int numThread = 3;
+    std::vector<std::vector<Param>> storeVector;
+    for (int i=0; i<3; i++) {
+	std::vector<Param> s;
+	s.reserve(N);
+	storeVector.push_back(s);
+    }
 
-//    global_param_ptr = &param;
-//    global_store_ptr = &store;
-//    set logger level
-//    make warning throw then enable debug
-//    auto cbsave = [](const char *message) {
-//	ofstream pof("./store_error.cereal");
-//	cereal::BinaryOutputArchive oarchive(pof);
-//	oarchive(*global_store_ptr);
-//	pof.flush();
-//	std::cout << message << std::endl;
-//	throw runtime_error(message);
-//    };
-
-//    bnc::Logger::showFatalCallback = cbsave;    
-//    bnc::Logger::showWarningCallback = cbsave;
-//    bnc::Logger::showErrorCallback = cbsave;
-//    bnc::Logger::showStatusCallback = cbsave;
-//    bnc::Logger::showMessageCallback = cbsave;
-
-    bnc::tic();
-    do_sample(N, data, param, store, &rng);
-    bnc::toc();
+    std::vector<bnc::MersenneTwisterRNG<bnc::AHRENS_DIETER>> rngVector;
+    for (auto & seed : std::vector<int>{10,100,110}) {
+	rngVector.push_back(bnc::MersenneTwisterRNG<bnc::AHRENS_DIETER>(seed));
+    }
     
-    ofstream pof("./store.cereal");
-    cereal::BinaryOutputArchive oarchive(pof);
-    oarchive(store);
+    std::vector<Param> paramVector;
+    for (int i=0; i<3; i++)
+	paramVector.push_back(Param(config, data, &rng));
+
+    ThreadPool pool(numThread);
+    std::vector< std::future<void> > results;
+    for (int i = 0; i < numThread; i++) {
+	results.emplace_back(
+	    pool.enqueue([i,&data,&paramVector,&rngVector,&storeVector,N] {
+		// RNG
+	        do_sample(i, N, data, paramVector[i], storeVector[i], &rngVector[i]);
+	    })
+	);
+    }
+
+    for (auto& r : results) r.get();
+
+    std::vector<std::map<std::string, bnc::Vector>> mapVector;
+    for (int i=0; i<3; i++) {
+	std::map<std::string, bnc::Vector> m;
+	store_to_map(storeVector[i], m);
+	mapVector.push_back(m);
+    }
+	
+    bnc::REmbed R(argc, argv);
+    R.define_coda_mcmc_list("res", mapVector);
+
+    R.repl();
     
     return 0;
 }
