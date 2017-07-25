@@ -1,5 +1,5 @@
 #include <config.hh>
-#include <rng/RNG.hh>
+#include <rng/rng.hh>
 
 using std::string;
 
