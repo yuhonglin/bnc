@@ -18,6 +18,7 @@ namespace bnc {
             void fixupSeeds();
         public:
             MarsagliaRNG(unsigned int seed);
+	    MarsagliaRNG(const MarsagliaRNG<norm_kind>& rng);
             void init(unsigned int seed);
             bool setState(std::vector<int> const &state);
             void getState(std::vector<int> &state) const;
@@ -35,6 +36,15 @@ namespace bnc {
             init(seed);
         }
 
+        template<NormKind norm_kind>
+        MarsagliaRNG<norm_kind>::MarsagliaRNG(const MarsagliaRNG<norm_kind>& rng)
+            : RmathRNG<norm_kind, MarsagliaRNG<norm_kind> >(rng._name)
+        {
+	    I[0] = rng.I[0];
+	    I[1] = rng.I[1];
+        }
+
+    
         template<NormKind norm_kind>
         void MarsagliaRNG<norm_kind>::fixupSeeds()
         {

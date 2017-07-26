@@ -19,6 +19,7 @@ namespace bnc {
 	void MT_sgenrand(unsigned int seed);
     public:
 	MersenneTwisterRNG(unsigned int seed);
+	MersenneTwisterRNG(const MersenneTwisterRNG<norm_kind>& rng);
 	void init(unsigned int seed);
 	bool setState(std::vector<int> const &state);
 	void getState(std::vector<int> &state) const;
@@ -81,6 +82,21 @@ namespace bnc {
 	init(seed);
     }
 
+
+    template<NormKind norm_kind>
+    MersenneTwisterRNG<norm_kind>::MersenneTwisterRNG(const MersenneTwisterRNG<norm_kind>&rng)
+	: RmathRNG<norm_kind, MersenneTwisterRNG<norm_kind> >(rng._name)
+    {
+	/* mti==N+1 means mt[N] is not initialized */
+	for (int i=0; i<625; i++) {
+	    dummy[i] = rng.dummy[i];
+	}
+	mt = dummy+1;
+	mti = rng.mti;
+    }
+    
+
+    
     template<NormKind norm_kind>
     void MersenneTwisterRNG<norm_kind>::MT_sgenrand(unsigned int seed)
     {

@@ -11,6 +11,7 @@ namespace bnc {
 	void fixupSeeds();
     public:
 	WichmannHillRNG(unsigned int seed);
+	WichmannHillRNG(const WichmannHillRNG<norm_kind>& rng);	
 	double uniform();
 	void init(unsigned int seed);
 	bool setState(std::vector<int> const &state);
@@ -43,6 +44,15 @@ namespace bnc {
 	init(seed);
     }
 
+    template<NormKind norm_kind>
+    WichmannHillRNG<norm_kind>::WichmannHillRNG(const WichmannHillRNG<norm_kind>& rng)
+	: RmathRNG<norm_kind, WichmannHillRNG<norm_kind> >(rng._name)
+    {
+	I[0] = rng.I[0];
+	I[1] = rng.I[1];
+	I[2] = rng.I[2];		
+    }
+    
     template<NormKind norm_kind>
     double WichmannHillRNG<norm_kind>::uniform()
     {

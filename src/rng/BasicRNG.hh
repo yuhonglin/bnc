@@ -16,6 +16,7 @@ namespace bnc {
 	const std::string _name;
 
 	RNG(std::string const &name);
+	RNG(const RNG &rng);
 	virtual ~RNG();
 	/**
 	 * This static utility function may be used by an RNG object to coerce

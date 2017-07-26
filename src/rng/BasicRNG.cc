@@ -9,6 +9,10 @@ namespace bnc {
 	: _name(name)
     {}
 
+    RNG::RNG(const RNG &rng)
+	: _name(rng._name)
+    {}
+    
     RNG::~RNG()
     {}
 

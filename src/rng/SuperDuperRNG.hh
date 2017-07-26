@@ -14,6 +14,7 @@ namespace bnc {
 	void fixupSeeds();
     public:
 	SuperDuperRNG(unsigned int seed);
+	SuperDuperRNG(const SuperDuperRNG<norm_kind>& rng);
 	double uniform();
 	void init(unsigned int seed);
 	bool setState(std::vector<int> const &state);
@@ -41,6 +42,16 @@ namespace bnc {
 	init(seed);    
     }
 
+    
+    template<NormKind norm_kind>
+    SuperDuperRNG<norm_kind>::SuperDuperRNG(const SuperDuperRNG<norm_kind>& rng)
+	: RmathRNG<norm_kind, SuperDuperRNG<norm_kind> >(rng._name)
+    {
+	I[0] = rng.I[0];
+	I[1] = rng.I[1];
+    }
+    
+    
     template<NormKind norm_kind>
     void SuperDuperRNG<norm_kind>::fixupSeeds()
     {

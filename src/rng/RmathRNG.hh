@@ -12,7 +12,6 @@
 #include <common/math.hh>
 
 #define repeat for(;;)
-
 using std::string;
 using std::log;
 using std::exp;
@@ -43,6 +42,7 @@ namespace bnc {
 	 * variables
 	 */
 	RmathRNG(std::string const &name);
+	RmathRNG(const RmathRNG<_N01_kind, Derived> &name);
 	double normal();
 	double exponential();
     };
@@ -56,6 +56,11 @@ namespace bnc {
 	: RNG(name), _BM_norm_keep(0)
     {}
 
+    template<NormKind _N01_kind, class Derived>
+    RmathRNG<_N01_kind, Derived>::RmathRNG(const RmathRNG<_N01_kind, Derived>&rng)
+	: RNG(rng._name), _BM_norm_keep(rng._BM_norm_keep)
+    {}
+    
     template<NormKind _N01_kind, class Derived>
     double RmathRNG<_N01_kind, Derived>::exponential()
     {
@@ -125,7 +130,6 @@ namespace bnc {
     template<NormKind _N01_kind, class Derived>
     double RmathRNG<_N01_kind, Derived>::normal()
     {
-
 	const static double a[32] =
 	    {
 		0.0000000, 0.03917609, 0.07841241, 0.1177699,
