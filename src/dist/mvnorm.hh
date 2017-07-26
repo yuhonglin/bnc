@@ -31,34 +31,44 @@ namespace bnc {
 	if (MD==CHOL_DECOMP) {
 	    // use cholesky decomposition (fastest, but only for PD sigma)
 	    Vector ret = rnorm(mu.size(), 0., 1., rng);
-	    Matrix L = sigma.llt().matrixL();
+	    Eigen::LLT<Matrix> lltofsigma(sigma);
+	    if (lltofsigma.info()!=Eigen::Success) {
+		LOG_WARNING("Cholesky decomposition of input sigma failed.");
+	    }
 	    
 	    if (prec==PRECISION) {
 		// sigma is precision matrix
-		return L.triangularView<Eigen::Lower>().solve(ret) + mu;
+		return lltofsigma.matrixL().solve(ret) + mu;
 	    } else {
 		// sigma is covariance matrix
-		return L.triangularView<Eigen::Lower>()*ret + mu;
+		return lltofsigma.matrixL()*ret + mu;
 	    }
 	}
 
 	if (MD==RCHOL_DECOMP) {
 	    // use robest cholesky decomposition
 	    Vector ret = rnorm(mu.size(), 0., 1., rng);
-	    Matrix L = sigma.ldlt().matrixL();
-	    
+
+	    Eigen::LDLT<Matrix> ldltofsigma(sigma);
+	    if (ldltofsigma.info()!=Eigen::Success) {
+		LOG_WARNING("Robust Cholesky decomposition of input sigma failed.");
+	    }
+
 	    if (prec==PRECISION) {
 		// sigma is precision matrix
-		return L.triangularView<Eigen::Lower>().solve(ret) + mu;
+		return ldltofsigma.matrixL().solve(ret) + mu;
 	    } else {
 		// sigma is covariance matrix
-		return L.triangularView<Eigen::Lower>()*ret + mu;
+		return ldltofsigma.matrixL()*ret + mu;
 	    }
 	}
 
 	if (MD==EIGEN_DECOMP) {
 	    // use eigen decomposition
 	    Eigen::SelfAdjointEigenSolver<Matrix> es(sigma);
+	    if (es.info()!=Eigen::Success) {
+		LOG_WARNING("SelfAdjointEigenSolver failed.");
+	    }
 	    Vector ret;
 	    if (prec==PRECISION) {
 		// sigma is precision matrix
