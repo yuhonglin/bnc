@@ -88,7 +88,7 @@ namespace bnc {
 		// because it has to invert a Matrix of dim=dim(Sv)
 		// So we use another formula which inverse matrix
 		// of dimension dim(Sw)
-		Matrix iV = Sv.llt().solve(Matrix::Identity(Sv.rows(), Sv.rows()));
+		Matrix iV = Sv.ldlt().solve(Matrix::Identity(Sv.rows(), Sv.rows()));
 		Matrix ihS = Matrix(nth(Sw,0).rows(), nth(Sw,0).rows());
 		for (int i=0; i<len; i++) {
 		    // prior update
@@ -145,12 +145,19 @@ namespace bnc {
 	    Matrix L(S[0].rows(),hS[0].rows());
 	    Matrix Var(S[0].rows(),S[0].cols());
 	    Vector E(U[0].rows());
-	    ret.col(len) = rmvnorm<VARIANCE,CHOL_DECOMP>(U[len], S[len], rng);
+	    
+	    ret.col(len) = rmvnorm<VARIANCE,RCHOL_DECOMP>(U[len], S[len], rng);
+
 	    for (int i = len-1; i>=0; i--) {
-		L   = hS[i].ldlt().solve(nth(A,i)*S[i]).transpose();
+		Eigen::LDLT<Matrix> ldltofhSi(hS[i]);
+		if (ldltofhSi.info()!=Eigen::Success) {
+		    LOG_WARNING("Robust Cholesky decomposition of hS[i] failed.");
+		}
+		
+		L   = ldltofhSi.solve(nth(A,i)*S[i]).transpose();
 		E   = U[i] + L*(ret.col(i+1)-hU[i]);
 		Var = S[i] - L*nth(A,i)*S[i];
-                ret.col(i) = rmvnorm<VARIANCE,CHOL_DECOMP>(E, Var, rng);
+                ret.col(i) = rmvnorm<VARIANCE,RCHOL_DECOMP>(E, Var, rng);
             }
 
 	    return ret;
@@ -180,8 +187,12 @@ namespace bnc {
 	    sU[len] = U[len];
 	    sS[len] = S[len];
 	    for (int i = len-1; i>=0; i--) {
-		// L      = S[i+1]*nth(A,i).transpose()*hS[i+1].inverse(); // FIXME: use solve and Cholesky
-		L      = (hS[i].llt().solve(nth(A,i)*S[i])).transpose();
+		Eigen::LDLT<Matrix> ldltofhSi(hS[i]);
+		if (ldltofhSi.info()!=Eigen::Success) {
+		    LOG_WARNING("Robust Cholesky decomposition of hS[i] failed.");
+		}
+		
+		L      = (ldltofhSi.solve(nth(A,i)*S[i])).transpose();
 		sU[i]  = U[i] + L*(sU[i+1] - hU[i]);
 		sS[i]  = S[i] + L*(sS[i+1] - hS[i])*L.transpose();
             }
