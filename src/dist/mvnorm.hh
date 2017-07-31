@@ -24,7 +24,7 @@ namespace bnc {
 
     // generate only 1 sample
     template<MVNORM_INPUT prec=VARIANCE,
-	     MAT_DECOMP MD=EIGEN_DECOMP, class RNGType>
+	     MAT_DECOMP MD=RCHOL_DECOMP, class RNGType>
     Vector rmvnorm(const Vector& mu, const Matrix& sigma,
 		   RNGType* rng)
     {
@@ -88,8 +88,7 @@ namespace bnc {
     }
 
     // generate one sample but use eigen decomposition as input
-    template<MVNORM_INPUT prec=VARIANCE,
-	     MAT_DECOMP MD=EIGEN_DECOMP, class RNGType>
+    template<MVNORM_INPUT prec=VARIANCE, class RNGType>
     Vector rmvnorm(const Vector& mu, const Eigen::SelfAdjointEigenSolver<Matrix>& es,
 		   RNGType* rng)
     {
@@ -108,11 +107,12 @@ namespace bnc {
 
     // generate multiple samples
     template<MVNORM_INPUT prec=VARIANCE,
-	     MAT_DECOMP MD=EIGEN_DECOMP, class RNGType>
+	     MAT_DECOMP MD=RCHOL_DECOMP, class RNGType>
     Matrix rmvnorm(const int& n, const Vector& mu,
 		   const Matrix& sigma, RNGType* rng)
     {
-	static_assert(MD==EIGEN_DECOMP || CHOL_DECOMP,
+	TODO
+	static_assert(MD==EIGEN_DECOMP || MD==CHOL_DECOMP || MD==RCHOL_DECOMP,
 		      "Matrix factorisation method not supported");
 
 	Matrix ret(n, mu.size());
