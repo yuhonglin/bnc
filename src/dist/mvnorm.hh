@@ -24,7 +24,7 @@ namespace bnc {
 
     // generate only 1 sample
     template<MVNORM_INPUT prec=VARIANCE,
-	     MAT_DECOMP MD=RCHOL_DECOMP, class RNGType>
+	     MAT_DECOMP MD=CHOL_DECOMP, class RNGType>
     Vector rmvnorm(const Vector& mu, const Matrix& sigma,
 		   RNGType* rng)
     {
@@ -46,6 +46,8 @@ namespace bnc {
 	}
 
 	if (MD==RCHOL_DECOMP) {
+	    TODO // current implementation is wrong because permutation matrix
+		// P and diagonal matrix D are neglected
 	    // use robest cholesky decomposition
 	    Vector ret = rnorm(mu.size(), 0., 1., rng);
 
