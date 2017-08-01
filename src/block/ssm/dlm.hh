@@ -146,7 +146,7 @@ namespace bnc {
 	    Matrix Var(S[0].rows(),S[0].cols());
 	    Vector E(U[0].rows());
 	    
-	    ret.col(len) = rmvnorm<VARIANCE,RCHOL_DECOMP>(U[len], S[len], rng);
+	    ret.col(len) = rmvnorm(U[len], S[len], rng);
 
 	    for (int i = len-1; i>=0; i--) {
 		Eigen::LDLT<Matrix> ldltofhSi(hS[i]);
@@ -157,7 +157,7 @@ namespace bnc {
 		L   = ldltofhSi.solve(nth(A,i)*S[i]).transpose();
 		E   = U[i] + L*(ret.col(i+1)-hU[i]);
 		Var = S[i] - L*nth(A,i)*S[i];
-                ret.col(i) = rmvnorm<VARIANCE,RCHOL_DECOMP>(E, Var, rng);
+                ret.col(i) = rmvnorm(E, Var, rng);
             }
 
 	    return ret;

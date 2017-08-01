@@ -370,99 +370,99 @@ void do_sample(const int& tid, const int& n, const Data &data, Param &param, std
 	 */
 	/// lambda.mu
 	// generate candidate
-	// double log_cand_lambda_mu = bnc::rnorm(std::log(param.lambda_mu), data.delta_lambda_mu, rng);
-	// double cand_lambda_mu     = std::exp(log_cand_lambda_mu);
-	// // accept probability: alpha.lambda.mu
-	// double numerator =
-	//     bnc::dmvnorm(param.mu_s, data.X_mu*param.beta_mu,
-	// 		 param.sigma2_mu*(-data.D.array()/cand_lambda_mu).exp().matrix(), bnc::LOG)
-	//     + bnc::dinvgamma(cand_lambda_mu, 2, 1/data.d, bnc::LOG)
-	//     + std::log(cand_lambda_mu);
-	// double denominator =
-	//     bnc::dmvnorm(param.mu_s, data.X_mu*param.beta_mu,
-	// 		 param.sigma2_mu*(-data.D.array()/param.lambda_mu).exp().matrix(), bnc::LOG)
-	//     + bnc::dinvgamma(param.lambda_mu, 2, 1/data.d, bnc::LOG)
-	//     + std::log(param.lambda_mu);
+	double log_cand_lambda_mu = bnc::rnorm(std::log(param.lambda_mu), data.delta_lambda_mu, rng);
+	double cand_lambda_mu     = std::exp(log_cand_lambda_mu);
+	// accept probability: alpha.lambda.mu
+	double numerator =
+	    bnc::dmvnorm(param.mu_s, data.X_mu*param.beta_mu,
+			 param.sigma2_mu*(-data.D.array()/cand_lambda_mu).exp().matrix(), bnc::LOG)
+	    + bnc::dinvgamma(cand_lambda_mu, 2, 1/data.d, bnc::LOG)
+	    + std::log(cand_lambda_mu);
+	double denominator =
+	    bnc::dmvnorm(param.mu_s, data.X_mu*param.beta_mu,
+			 param.sigma2_mu*(-data.D.array()/param.lambda_mu).exp().matrix(), bnc::LOG)
+	    + bnc::dinvgamma(param.lambda_mu, 2, 1/data.d, bnc::LOG)
+	    + std::log(param.lambda_mu);
 
-	// double ratio = exp(numerator - denominator);
+	double ratio = exp(numerator - denominator);
 	
-	// double alpha_lambda_mu = std::min(1., ratio);
+	double alpha_lambda_mu = std::min(1., ratio);
 
-	// // generate a random number from U(0,1)
-	// double U = runif(0, 1, rng);
+	// generate a random number from U(0,1)
+	double U = runif(0, 1, rng);
 
-	// // updating lambda.mu
-	// if (U < alpha_lambda_mu) {
-	//     param.lambda_mu = cand_lambda_mu;
-	//     param.count_lambda_mu++;
-	// }
+	// updating lambda.mu
+	if (U < alpha_lambda_mu) {
+	    param.lambda_mu = cand_lambda_mu;
+	    param.count_lambda_mu++;
+	}
 
 	// save(lambda.mu)
 	
 	/// lambda.Almp
 	// generate candidate
-	// double log_cand_lambda_Almp = bnc::rnorm(std::log(param.lambda_Almp), data.delta_lambda_Almp, rng);
-	// double cand_lambda_Almp = std::exp(log_cand_lambda_Almp);
+	double log_cand_lambda_Almp = bnc::rnorm(std::log(param.lambda_Almp), data.delta_lambda_Almp, rng);
+	double cand_lambda_Almp = std::exp(log_cand_lambda_Almp);
 
-	// // accept probability: alpha.lambda.Almp
-	// numerator =
-	//     bnc::dmvnorm(param.Almp_s,
-	// 		 data.X_Almp*param.beta_Almp,
-	// 		 param.sigma2_Almp*(-data.D.array()/cand_lambda_Almp).exp(), bnc::LOG)
-	//     + std::log(bnc::dinvgamma(cand_lambda_Almp, 2, 1/data.d, bnc::LOG))
-	//     + std::log(cand_lambda_Almp);
-	// denominator =
-	//     bnc::dmvnorm(param.Almp_s,
-	// 		 data.X_Almp*param.beta_Almp,
-	// 		 param.sigma2_Almp*(-data.D.array()/param.lambda_Almp).exp(), bnc::LOG)
-	//     + std::log(bnc::dinvgamma(param.lambda_Almp, 2, 1/data.d, bnc::LOG))
-	//     + std::log(param.lambda_Almp);
+	// accept probability: alpha.lambda.Almp
+	numerator =
+	    bnc::dmvnorm(param.Almp_s,
+			 data.X_Almp*param.beta_Almp,
+			 param.sigma2_Almp*(-data.D.array()/cand_lambda_Almp).exp(), bnc::LOG)
+	    + std::log(bnc::dinvgamma(cand_lambda_Almp, 2, 1/data.d, bnc::LOG))
+	    + std::log(cand_lambda_Almp);
+	denominator =
+	    bnc::dmvnorm(param.Almp_s,
+			 data.X_Almp*param.beta_Almp,
+			 param.sigma2_Almp*(-data.D.array()/param.lambda_Almp).exp(), bnc::LOG)
+	    + std::log(bnc::dinvgamma(param.lambda_Almp, 2, 1/data.d, bnc::LOG))
+	    + std::log(param.lambda_Almp);
 	
-	// ratio = std::exp(numerator - denominator);
+	ratio = std::exp(numerator - denominator);
 
-	// double alpha_lambda_Almp = std::min(1., ratio);
+	double alpha_lambda_Almp = std::min(1., ratio);
 
 	// generate a random number from U(0,1)
-	// U = bnc::runif(0, 1, rng);
+	U = bnc::runif(0, 1, rng);
 
-	// // updating lambda.Almp
-	// if (U < alpha_lambda_Almp) {
-	//     param.lambda_Almp = cand_lambda_Almp;
-	//     param.count_lambda_Almp ++;
-	// }
+	// updating lambda.Almp
+	if (U < alpha_lambda_Almp) {
+	    param.lambda_Almp = cand_lambda_Almp;
+	    param.count_lambda_Almp ++;
+	}
 
-	// /// lambda.gamma
-	// // generate candidate
-	// double log_cand_lambda_gamma =
-	//     bnc::rnorm(std::log(param.lambda_gamma), data.delta_lambda_gamma, rng);
-	// double cand_lambda_gamma = std::exp(log_cand_lambda_gamma);
+	/// lambda.gamma
+	// generate candidate
+	double log_cand_lambda_gamma =
+	    bnc::rnorm(std::log(param.lambda_gamma), data.delta_lambda_gamma, rng);
+	double cand_lambda_gamma = std::exp(log_cand_lambda_gamma);
 	
-	// numerator =
-	//     bnc::dmvnorm(param.gamma_s,
-	// 		 data.X_gamma*param.beta_gamma,
-	// 		 param.sigma2_gamma*(-data.D.array()/cand_lambda_gamma))
-	//     + bnc::dinvgamma(cand_lambda_gamma, 2, 1/data.d, bnc::LOG)
-	//     + std::log(cand_lambda_gamma);
-	// denominator =
-	//     bnc::dmvnorm(param.gamma_s,
-	// 		 data.X_gamma*param.beta_gamma,
-	// 		 param.sigma2_gamma*(-data.D.array()/param.lambda_gamma))
-	//     + bnc::dinvgamma(param.lambda_gamma, 2, 1/data.d, bnc::LOG)
-	//     + std::log(param.lambda_gamma);
-	// ratio = std::exp(numerator - denominator);
+	numerator =
+	    bnc::dmvnorm(param.gamma_s,
+			 data.X_gamma*param.beta_gamma,
+			 param.sigma2_gamma*(-data.D.array()/cand_lambda_gamma))
+	    + bnc::dinvgamma(cand_lambda_gamma, 2, 1/data.d, bnc::LOG)
+	    + std::log(cand_lambda_gamma);
+	denominator =
+	    bnc::dmvnorm(param.gamma_s,
+			 data.X_gamma*param.beta_gamma,
+			 param.sigma2_gamma*(-data.D.array()/param.lambda_gamma))
+	    + bnc::dinvgamma(param.lambda_gamma, 2, 1/data.d, bnc::LOG)
+	    + std::log(param.lambda_gamma);
+	ratio = std::exp(numerator - denominator);
 
-	// double alpha_lambda_gamma = std::min(1., ratio);
+	double alpha_lambda_gamma = std::min(1., ratio);
 
-	// // generate a random number from U(0,1)
-	// U = bnc::runif(0, 1, rng);
+	// generate a random number from U(0,1)
+	U = bnc::runif(0, 1, rng);
 
-	// // updating lambda.gamma
-	// if (U < alpha_lambda_gamma) {
-	//     param.lambda_gamma = cand_lambda_gamma;
-	//     param.count_lambda_gamma ++;
-	// }
+	// updating lambda.gamma
+	if (U < alpha_lambda_gamma) {
+	    param.lambda_gamma = cand_lambda_gamma;
+	    param.count_lambda_gamma ++;
+	}
 
-	// // save(lambda.gamma)
+	// save(lambda.gamma)
 	
 	/*
 	 *    Module 15: sampling sigma2.v/psi.v
@@ -552,6 +552,7 @@ void store_to_map(const std::vector<Param>& store,
 
 int main(int argc, char *argv[])
 {
+
     // RNG
     bnc::MersenneTwisterRNG<bnc::AHRENS_DIETER> rng(10);
     
@@ -610,7 +611,7 @@ int main(int argc, char *argv[])
 	    alt_range;
     }
 
-    int N = 20000;
+    int N = 17800;
     Data  data(config);    
     
     int numThread = 3;
@@ -621,22 +622,20 @@ int main(int argc, char *argv[])
 	storeVector.push_back(s);
     }
 
-    std::vector<bnc::MersenneTwisterRNG<bnc::AHRENS_DIETER>> rngVector;
-    for (auto & seed : std::vector<int>{10,100,110}) {
-	rngVector.push_back(bnc::MersenneTwisterRNG<bnc::AHRENS_DIETER>(seed));
-    }
-    
     std::vector<Param> paramVector;
     for (int i=0; i<3; i++)
 	paramVector.push_back(Param(config, data, &rng));
 
+    std::vector<int> seeds = {100, 110, 101};
+    
     ThreadPool pool(numThread);
     std::vector< std::future<void> > results;
     for (int i = 0; i < numThread; i++) {
 	results.emplace_back(
-	    pool.enqueue([i,&data,&paramVector,&rngVector,&storeVector,N] {
+	    pool.enqueue([i,&data,&paramVector,&storeVector,N, &seeds] {
 		// RNG
-	        do_sample(i, N, data, paramVector[i], storeVector[i], &rngVector[i]);
+		bnc::MersenneTwisterRNG<bnc::AHRENS_DIETER> rng(seeds[i]);
+	        do_sample(i, N, data, paramVector[i], storeVector[i], &rng);
 	    })
 	);
     }
