@@ -10,7 +10,7 @@
  *  anytime. And it provide interfaces to define data
  *  to the R global environment before entering repl.
  *
- *  Usage
+ *  Usage:
  *     1. Add compilation include path
  *  [on Mac] for example,
  *     -I/opt/local/Library/Frameworks/R.framework/Headers/
@@ -21,6 +21,14 @@
  *     4. Set R_HOME environment variable
  *  [on Mac] for example,
  *     export R_HOME=/opt/local/Library/Frameworks/R.framework/Resources/
+ *     5. get instance
+ *     REmbed* r = REmbed->get_instance(argc, argv);
+ *     
+ *  Notice:
+ *     One should place the code at the beginning of the main
+ *     function because if the first call of get_instance failed,
+ *     the process will quit immediately.
+ *
  */
 
 #ifndef REMBED_H
@@ -80,10 +88,20 @@ namespace bnc {
 	    INVALID_OUTPUT
 	};
 
-    
+	/// use singleton
+	//  because each process can only embed one R instance
+	//  since it has lots of global variables to initialise.
+    private:
 	REmbed(int argc, char **argv) {
 	    Rf_initEmbeddedR(argc, argv);
 	};
+    public:
+	static REmbed& get_instance(int argc, char **argv) {
+	    static REmbed r(argc, argv);
+	    return r;
+	}
+	    
+    public:
 	virtual ~REmbed() {
 	    Rf_endEmbeddedR(0);
 	};
