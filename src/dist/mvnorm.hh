@@ -2,9 +2,8 @@
  * @brief  Generate multivariate normal distribution
  *         Notice that using different methods (RCHOL or CHOL)
  *         provide non-identical samples
- * @todo   provide more interface for ldlt object and llt object
- *         as inputs, then modify multi sample versions 
- *         correspondingly.
+ * @todo   add svd decomposition as an option
+ *         
  */
 
 
@@ -98,6 +97,39 @@ namespace bnc {
 				NaN);
     }
 
+    // generate one sample but use cholesky decomposition as input
+    template<MVNORM_INPUT prec=VARIANCE, class RNGType>
+    Vector rmvnorm(const Vector& mu, const Eigen::LLT<Matrix>& lltofsigma,
+		   RNGType* rng) {
+	Vector ret = rnorm(mu.size(), 0., 1., rng);	
+	if (prec==PRECISION) {
+	    // sigma is precision matrix
+	    return lltofsigma.matrixU().solve(ret) + mu;
+	} else {
+	    // sigma is covariance matrix
+	    return lltofsigma.matrixL()*ret + mu;
+	}
+    }
+
+    // generate one sample but use robust cholesky decomposition as input
+    template<MVNORM_INPUT prec=VARIANCE, class RNGType>
+    Vector rmvnorm(const Vector& mu, const Eigen::LDLT<Matrix>& ldltofsigma,
+		   RNGType* rng) {
+	Vector ret = rnorm(mu.size(), 0., 1., rng);	
+	if (prec==PRECISION) {
+	    // sigma is precision matrix
+	    return mu + ldltofsigma.transpositionsP().transpose() *
+		ldltofsigma.matrixU().solve(
+		    (ret.array()/ldltofsigma.vectorD().array().sqrt()).matrix());
+	} else {
+	    // sigma is covariance matrix
+	    return
+		mu + ldltofsigma.transpositionsP().transpose() *
+		(ldltofsigma.matrixL() *
+		 ( (ret.array() * ldltofsigma.vectorD().array().sqrt()).matrix() ));
+	}
+    }
+    
     // generate one sample but use eigen decomposition as input
     template<MVNORM_INPUT prec=VARIANCE, class RNGType>
     Vector rmvnorm(const Vector& mu, const Eigen::SelfAdjointEigenSolver<Matrix>& es,
@@ -122,17 +154,36 @@ namespace bnc {
     Matrix rmvnorm(const int& n, const Vector& mu,
 		   const Matrix& sigma, RNGType* rng)
     {
-	TODO
 	static_assert(MD==EIGEN_DECOMP || MD==CHOL_DECOMP || MD==RCHOL_DECOMP,
 		      "Matrix factorisation method not supported");
 
-	Matrix ret(n, mu.size());
-	Eigen::SelfAdjointEigenSolver<Matrix> es(sigma);
-	
-	for (int i=0; i<n; i++) {
-	    ret.row(i) = rmvnorm<prec,MD,RNGType>(mu, es, rng);
+	Matrix ret(n, mu.size());	
+	if (MD==EIGEN_DECOMP) {
+	    Eigen::SelfAdjointEigenSolver<Matrix> es(sigma);
+	    if (es.info()!=Eigen::Success) {
+		LOG_WARNING("SelfAdjointEigenSolver failed.");
+	    }
+	    for (int i=0; i<n; i++) {
+		ret.row(i) = rmvnorm<prec,MD,RNGType>(mu, es, rng);
+	    }
+	} else if (MD==RCHOL_DECOMP) {
+	    Eigen::LDLT<Matrix> ldltofsigma(sigma);
+	    if (ldltofsigma.info()!=Eigen::Success) {
+		LOG_WARNING("Robust Cholesky decomposition of input sigma failed.");
+	    }
+	    for (int i=0; i<n; i++) {
+		ret.row(i) = rmvnorm<prec,MD,RNGType>(mu, ldltofsigma, rng);
+	    }
+	} else if (MD==CHOL_DECOMP) {
+	    Eigen::LLT<Matrix> lltofsigma(sigma);
+	    if (lltofsigma.info()!=Eigen::Success) {
+		LOG_WARNING("Cholesky decomposition of input sigma failed.");
+	    }
+	    for (int i=0; i<n; i++) {
+		ret.row(i) = rmvnorm<prec,MD,RNGType>(mu, lltofsigma, rng);
+	    }
 	}
-
+	
 	return ret;
     }
 
