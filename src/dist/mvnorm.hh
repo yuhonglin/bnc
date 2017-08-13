@@ -1,6 +1,12 @@
 /**
-  Partly adapted from jags.
+ * @brief  Generate multivariate normal distribution
+ *         Notice that using different methods (RCHOL or CHOL)
+ *         provide non-identical samples
+ * @todo   provide more interface for ldlt object and llt object
+ *         as inputs, then modify multi sample versions 
+ *         correspondingly.
  */
+
 
 #ifndef MVNORM_H
 #define MVNORM_H
@@ -38,7 +44,7 @@ namespace bnc {
 	    
 	    if (prec==PRECISION) {
 		// sigma is precision matrix
-		return lltofsigma.matrixL().solve(ret) + mu;
+		return lltofsigma.matrixU().solve(ret) + mu;
 	    } else {
 		// sigma is covariance matrix
 		return lltofsigma.matrixL()*ret + mu;
@@ -46,8 +52,6 @@ namespace bnc {
 	}
 
 	if (MD==RCHOL_DECOMP) {
-	    TODO // current implementation is wrong because permutation matrix
-		// P and diagonal matrix D are neglected
 	    // use robest cholesky decomposition
 	    Vector ret = rnorm(mu.size(), 0., 1., rng);
 
@@ -58,11 +62,16 @@ namespace bnc {
 
 	    if (prec==PRECISION) {
 		// sigma is precision matrix
-		return ldltofsigma.matrixL().solve(ret) + mu;
+		    return mu + ldltofsigma.transpositionsP().transpose() *
+		    ldltofsigma.matrixU().solve(
+			(ret.array()/ldltofsigma.vectorD().array().sqrt()).matrix());
 	    } else {
 		// sigma is covariance matrix
-		return ldltofsigma.matrixL()*ret + mu;
-	    }
+                return
+		    mu + ldltofsigma.transpositionsP().transpose() *
+		    (ldltofsigma.matrixL() *
+		     ( (ret.array() * ldltofsigma.vectorD().array().sqrt()).matrix() ));
+            }
 	}
 
 	if (MD==EIGEN_DECOMP) {
