@@ -16,6 +16,14 @@ namespace bnc {
 	void init(unsigned int seed);
 	bool setState(std::vector<int> const &state);
 	void getState(std::vector<int> &state) const;
+
+	template <class Archive>
+	void serialize( Archive & ar ) {
+	    ar( I[0] );
+	    ar( I[1] );
+	    ar( I[2] );
+	}	
+	
     };
 
 }

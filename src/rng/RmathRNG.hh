@@ -45,6 +45,11 @@ namespace bnc {
 	RmathRNG(const RmathRNG<_N01_kind, Derived> &name);
 	double normal();
 	double exponential();
+
+	template <class Archive>
+	void serialize( Archive & ar ) {
+	    ar( _BM_norm_keep );
+	}	
     };
     
 } /* namespace bnc */

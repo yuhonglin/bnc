@@ -24,6 +24,15 @@ namespace bnc {
 	bool setState(std::vector<int> const &state);
 	void getState(std::vector<int> &state) const;
 	double uniform();
+
+	template <class Archive>
+	void serialize( Archive & ar ) {
+	    ar( mti);	    
+	    for (int i=0; i<625; i++)
+		ar( dummy[i] );
+	    // mti always points to dummy+1 and will be set in constructor
+	}	
+	
     };
 
 }

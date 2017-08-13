@@ -31,6 +31,12 @@ namespace bnc {
 	static double uniform(void *);
 	static double normal(void *);
 	static double exponential(void *);
+
+
+	template <class Archive>
+	void serialize( Archive & ar ) {
+	    ar( _name );
+	}	
     };
 
 } /* namespace bnc */
