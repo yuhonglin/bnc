@@ -1,15 +1,14 @@
 * Distributions
 
-This folder provide functions on distributions. For each distribution ```dist```, it should provide 
-three functions, namely 
+This folder provides functions on distributions. For each univariate distribution /dist/, it should provide 
+four functions, namely 
 
-- ```ddist```: evalute the density of a sample given parameters
-- ```pdist```: evalute the cumulative probability of a sample given parameters
-- ```rnorm```: draw a sample given parameters
+- /ddist/: evalute the density of a sample given parameters
+- /pdist/: evalute the cumulative probability of a sample given parameters
+- /rdist/: draw a sample given parameters
+- /qdist/: compute the quantile of specific probability
 
-Since the results of ```ddist``` and ```pdist``` are always scalars, so the results are given by 
-returned value. For mutivariate distributions, the results of ```rnorm``` can be an array. To make
-all interface identical, we use the first argument as the return value.
+For mutivariate distribution (/mvnorm/) quantile functions are not implemented.
 
 * Done
   1. Scalar distributions implemented in rmath library.
@@ -18,25 +17,26 @@ all interface identical, we use the first argument as the return value.
 
 * Notes
 ** Notes on truncated normal distribution
-   1. "P" functions are based on the the ```mvtnorm``` package in R. The main functions
-      are in file ```mvt.hh``` (transformed from ```mvt.f```). And the file ```tmvnorm```
-      should include ```mvt.hh```.
-   2. "R" functions are reimplementation of the ```TruncatedNormal``` package in R
+   1. "P" functions are based on the the /mvtnorm/ package in R. The main functions
+      are in file /mvt.hh/ (transformed from /mvt.f/). And the file /tmvnorm/
+      should include /mvt.hh/.
+   2. "R" functions are reimplementation of the /TruncatedNormal/ package in R
       with C++. They create identical samples for now, which is a bit slow but good
       for debugging.
-   3. ```pmvnorm``` computes the probability measure of a box area defined by ```lower```
-      and ```upper```. And to use that, one can optionally provide a ```Mvt``` object.
+   3. /pmvnorm/ computes the probability measure of a box area defined by /lower/
+      and /upper/. And to use that, one can optionally provide a /Mvt/ object.
       This object can be reused arbitrarily *IN A SINGLE THREAD*, so to speed up, when 
-      one has to call ```pmvnorm``` multiple times, providing a ```Mvt``` object is
+      one has to call /pmvnorm/ multiple times, providing a /Mvt/ object is
       preferred. For multithreading, one Mvt must be provided for each thread.
       
 * Todo
   1. Multivariate t Distribution
   2. (Multivariate) Pareto distributions
   3. Dirichlet Distribution
-  4. Add likelihood ratio function to each distribution
-  5. Make arguments ```const``` wherever possible
+  4. Add likelihood ratio function to each distribution (used in Metropolis-Hasting algorithm)
+  5. Make arguments /const/ wherever possible
+
 * Bottle net of performance
-** ```brmath```
-   From profiling, the ```pnorm``` function is the bottle net for truncated normal sampling. Maybe adding
-   ```const``` to those functions' arguments can help improve it.
+** /brmath/
+   From profiling, the /pnorm/ function is the bottle net for truncated normal sampling. Maybe adding
+   /const/ to those functions' arguments can help improve it.
