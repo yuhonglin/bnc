@@ -1,6 +1,9 @@
 /*
   Dynamic Linear Model based on Eigen
-  Author: Honglin Yu
+  Current limitation:
+  - missing data is not supported
+  TODO:
+  - use SVD to be more numerically stable
  */
 #ifndef DLM_H
 #define DLM_H
