@@ -38,6 +38,8 @@
 #include <vector>
 #include <map>
 #include <type_traits>
+#include <vector>
+#include <string>
 #include <cstdio>
 
 #include <matrix/matrix.hh>
@@ -96,8 +98,27 @@ namespace bnc {
 	    Rf_initEmbeddedR(argc, argv);
 	};
     public:
-	static REmbed& get_instance(int argc, char **argv) {
-	    static REmbed r(argc, argv);
+	// default arguments
+	// Usage:
+	//   - one can use REmbed::dfltargs.clear() to clear it
+	//   - or one can use REmbed::dfltargs.append() to extend it
+	static std::vector<std::string> dfltargs;
+	
+	static REmbed& get_instance(int argc=0, char **argv=nullptr) {
+	    int full_argc = argc + dfltargs.size();
+	    std::vector<char*> full_argv;
+	    for (int i = 0; i < argc; i++) {
+		full_argv.push_back(argv[i]);
+	    }
+	    // must locate before push_back(argv) because
+	    // the first argument is the exec's name
+	    for (const auto& arg : dfltargs) {
+		full_argv.push_back((char*)arg.data());
+	    }
+	    full_argv.push_back(nullptr);
+	    
+	    static REmbed r(full_argc, full_argv.data());
+	    
 	    return r;
 	}
 	    
@@ -434,6 +455,11 @@ namespace bnc {
 	}
     };
 
+    // default arguments
+    std::vector<std::string> REmbed::dfltargs = {
+	"-q" // no R header
+    };
+    
     template<class T>
     T& REnvironment::operator= (T& t) {
 	ptr_r->define_var(name, t);
