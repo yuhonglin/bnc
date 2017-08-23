@@ -68,6 +68,20 @@ namespace bnc {
 	virtual int size() = 0;
     };
 
+    class R_Double : public R_Base
+    {
+    public:
+	R_Double(const double & v) : R_Base("double"),
+				     value(v) {};
+	virtual ~R_Double() {};
+	R_Double& operator= (const double & v) {
+	    value = v;
+	    return *this;
+	}
+	double value;
+	virtual int size() { return 1; }
+    };
+
     class R_String : public R_Base
     {
     public:
@@ -520,6 +534,33 @@ namespace bnc {
 	    Rf_defineVar(variableName, res, R_GlobalEnv);
 	    UNPROTECT(3);
 	}
+
+	// for R specific types
+	template<class T>
+	typename std::enable_if<std::is_base_of<R_Base, T>::value, void>::type
+	define_var(const std::string& n, std::shared_ptr<T> d) {
+	    switch (d->type) {
+	    case "vector":
+		define_var(n, std::static_pointer_cast<R_Vector>(d)->value);
+		break;
+	    case "matrix":
+		define_var(n, std::static_pointer_cast<R_Matrix>(d)->value);
+		break;
+	    case "double":
+		define_var(n, std::static_pointer_cast<R_Double>(d)->value);
+		break;
+	    case "list":
+		TODO;
+		break;
+	    case "unknown":
+		LOG_WARNING("unknown type, do nothing");
+		break;
+	    default:
+		TODO; // not implemented yet
+		break;
+	    }
+	}
+	
 	// bracket sugar
 	// Usage
 	// Rembed["varname"] = var;
