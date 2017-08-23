@@ -113,7 +113,7 @@ namespace bnc {
     class R_Matrix : public R_Base
     {
     public:
-	R_Matrix(const Vector& v) : R_Base("matrix"),
+	R_Matrix(const Matrix& v) : R_Base("matrix"),
 				    value(v) {};
 	virtual ~R_Matrix() {};
 	R_Matrix& operator= (const Matrix & v) {
@@ -129,12 +129,77 @@ namespace bnc {
     class R_List : public R_Base
     {
     public:
+	class R_List_Mapped {
+	    R_List* rlist;
+	    std::string name;
+	    int idx;
+
+	public:
+	    R_List_Mapped(R_List* l, const std::string& n="", const int& i=0)
+		: name(n), idx(i), rlist(l) {};
+	    
+	    template<class T>
+	    typename std::enable_if<std::is_base_of<R_Base, T>::value, T>::type
+	    operator= (const T& value) {
+		if (name=="") {
+		    rlist->intidx_value[idx] =
+			std::make_shared<T>(value);
+		} else {
+		    rlist->stridx_value[name] =
+			std::make_shared<T>(value);
+		}
+		return value;		
+	    };
+
+	    Vector operator= (const Vector& value) {
+		if (name=="") {
+		    rlist->intidx_value[idx] =
+			std::make_shared<R_Vector>(value);
+		} else {
+		    rlist->stridx_value[name] =
+			std::make_shared<R_Vector>(R_Vector(value));
+		}
+		return value;
+	    };
+
+	    double operator= (const double& value) {
+		if (name=="") {
+		    rlist->intidx_value[idx] =
+			std::make_shared<R_Double>(R_Double(value));
+		} else {
+		    rlist->stridx_value[name] =
+			std::make_shared<R_Double>(R_Double(value));
+		}
+		return value;		
+	    };	    
+
+	    Matrix operator= (const Matrix& value) {
+		if (name=="") {
+		    rlist->intidx_value[idx] =
+			std::make_shared<R_Matrix>(R_Matrix(value));
+		} else {
+		    rlist->stridx_value[name] =
+			std::make_shared<R_Matrix>(R_Matrix(value));
+		}
+		return value;
+	    };
+	    
+	};
+	
 	R_List() : R_Base("list") {};
 	virtual ~R_List() {};
 
-	std::map<std::string, std::shared_ptr<R_Base>> stridx_value;
 	std::map<int, std::shared_ptr<R_Base>> intidx_value;
+	std::map<std::string, std::shared_ptr<R_Base>> stridx_value;
 
+	R_List_Mapped operator[](int idx) {
+	    return R_List_Mapped(this, "", idx);
+	}
+
+	R_List_Mapped operator[](const std::string& idx) {
+	    return R_List_Mapped(this, idx, 0);
+	}
+	
 	virtual int size() { return stridx_value.size() + intidx_value.size(); }
     };
 
@@ -346,37 +411,58 @@ namespace bnc {
 	// Define new variable in embeded R which can be explored
 	// in REPL.
 	// Input: variable name and its value
-	void define_var(const std::string& n, const double& d) {
-	    SEXP data, variableName;
+	SEXP alloc_var(const double& d) {
+	    SEXP data;
 	    PROTECT(data = Rf_allocVector(REALSXP, 1));
 	    REAL(data)[0] = d;
+	    UNPROTECT(1);
+	    return data;
+	}
+	SEXP define_var(const std::string& n, const double& d) {
+	    SEXP data, variableName;
+	    data = PROTECT(alloc_var(d));
 	    PROTECT(variableName = Rf_install(n.c_str()));
 	    Rf_defineVar(variableName, data, R_GlobalEnv);
-	    UNPROTECT(2);	    
+	    UNPROTECT(2);
+	    return data;
 	}
-	void define_var(const std::string& n, const Vector& v) {
-	    SEXP data, variableName;
+	SEXP alloc_var(const Vector& v) {
+	    SEXP data;
 	    PROTECT(data = Rf_allocVector(REALSXP, v.size()));
 	    std::memcpy(REAL(data), v.data(), sizeof(double)*v.size());
+	    UNPROTECT(1);
+	    return data;
+	}
+	SEXP define_var(const std::string& n, const Vector& v) {
+	    SEXP data, variableName;
+	    data = PROTECT(alloc_var(v));
 	    variableName = PROTECT(Rf_install(n.c_str()));
 	    Rf_defineVar(variableName, data, R_GlobalEnv);
-	    UNPROTECT(2);	    
+	    UNPROTECT(2);
+	    return data;
 	}
-	void define_var(const std::string& n, const Matrix& m) {
-	    SEXP data, variableName;
+	SEXP alloc_var(const Matrix& m) {
+	    SEXP data;
 	    PROTECT(data = Rf_allocMatrix(REALSXP, m.rows(), m.cols()));
 	    if (!m.IsRowMajor) {
 		std::memcpy(REAL(data), m.data(), sizeof(double)* m.size());
 	    } else {
 		std::memcpy(REAL(data), m.transpose().data(), sizeof(double)*m.size());
 	    }
+	    UNPROTECT(1);
+	    return data;
+	}
+	SEXP define_var(const std::string& n, const Matrix& m) {
+	    SEXP data, variableName;
+	    data = PROTECT(alloc_var(m));
 	    PROTECT(variableName = Rf_install(n.c_str()));
 	    Rf_defineVar(variableName, data, R_GlobalEnv);
 	    UNPROTECT(2);
+	    return data;
 	}
 	// for std::vector<int>, std::vector<double> etc.
 	template<class T>
-	typename std::enable_if<std::is_arithmetic<T>::value, void>::type
+	typename std::enable_if<std::is_arithmetic<T>::value, SEXP>::type
 	define_var(const std::string& n, const std::vector<T>& v) {
 	    SEXP data, variableName;
 	    PROTECT(data = Rf_allocVector(REALSXP, v.size()));
@@ -384,10 +470,11 @@ namespace bnc {
 		REAL(data)[i] = v[i];
 	    variableName = PROTECT(Rf_install(n.c_str()));
 	    Rf_defineVar(variableName, data, R_GlobalEnv);
-	    UNPROTECT(2);	    
+	    UNPROTECT(2);
+	    return data;
 	}
 	// define a name list of vectors
-	void define_var(const std::string& n, std::map<std::string, Vector> m) {
+	SEXP define_var(const std::string& n, std::map<std::string, Vector> m) {
 	    SEXP nms = PROTECT(allocVector(STRSXP, m.size()));
 	    SEXP res = PROTECT(allocVector(VECSXP, m.size()));
 	    int i = 0;
@@ -406,10 +493,11 @@ namespace bnc {
 	    SEXP variableName = PROTECT(Rf_install(n.c_str()));
 	    Rf_defineVar(variableName, res, R_GlobalEnv);
 	    UNPROTECT(3);
+	    return res;
 	}
 	// define a named list of vectors from map
 	template<class T>
-	void define_var(const std::string& n, std::map<std::string, T> m) {
+	SEXP define_var(const std::string& n, std::map<std::string, T> m) {
 
 	    SEXP res = PROTECT(allocVector(VECSXP, m.size()));
 	    SEXP nms = PROTECT(allocVector(STRSXP, m.size()));
@@ -432,6 +520,7 @@ namespace bnc {
 	    Rf_defineVar(variableName, res, R_GlobalEnv);
 
 	    UNPROTECT(3);
+	    return res;
 	}
 	// get a coda mcmc list
 	template<class T>
@@ -481,11 +570,11 @@ namespace bnc {
 	}
 	// define a coda mcmc object
 	template<class T>
-	void define_coda_mcmc(const std::string& n, std::map<std::string, T> m,
+	SEXP define_coda_mcmc(const std::string& n, std::map<std::string, T> m,
 			      const int& start=1, int end=0, const int& thin=1) {
 	    if (library("coda")!=SUCCESS) {
 		LOG_WARNING("Coda package not installed, do nothing");
-		return;
+		return nullptr;
 	    }
 
 	    if (m.size() != 0) {
@@ -497,22 +586,23 @@ namespace bnc {
 	    SEXP variableName = PROTECT(Rf_install(n.c_str()));
 	    Rf_defineVar(variableName, res, R_GlobalEnv);
 	    UNPROTECT(2);
+	    return res;
 	}
 	// define a coda mcmc.list object
 	template<class T>
-	void define_coda_mcmc_list(const std::string& n,
+	SEXP define_coda_mcmc_list(const std::string& n,
 				   std::vector<std::map<std::string, T>> ml,
 				   const int& start=1,
 				   int end=0,
 				   const int& thin=1) {
 	    if (library("coda")!=SUCCESS) {
 		LOG_WARNING("Coda package not installed, do nothing");
-		return;
+		return nullptr;
 	    }
 
 	    if (ml.size() <= 0 || ml[0].size() <= 0) {
 		LOG_WARNING("Empty input, do nothing");
-		return;
+		return nullptr;
 	    }
 	    
 	    end = start + (ml[0].begin()->second.size()-1)*thin;
@@ -533,34 +623,73 @@ namespace bnc {
 	    
 	    Rf_defineVar(variableName, res, R_GlobalEnv);
 	    UNPROTECT(3);
+
+	    return res;
 	}
 
 	// for R specific types
 	template<class T>
-	typename std::enable_if<std::is_base_of<R_Base, T>::value, void>::type
-	define_var(const std::string& n, std::shared_ptr<T> d) {
-	    switch (d->type) {
-	    case "vector":
-		define_var(n, std::static_pointer_cast<R_Vector>(d)->value);
-		break;
-	    case "matrix":
-		define_var(n, std::static_pointer_cast<R_Matrix>(d)->value);
-		break;
-	    case "double":
-		define_var(n, std::static_pointer_cast<R_Double>(d)->value);
-		break;
-	    case "list":
-		TODO;
-		break;
-	    case "unknown":
+	typename std::enable_if<std::is_base_of<R_Base, T>::value, SEXP>::type
+	alloc_var(std::shared_ptr<T> d) {
+	    if (d == nullptr) return nullptr;
+
+	    if (d->type == "vector")		
+		return alloc_var(std::dynamic_pointer_cast<R_Vector>(d)->value);
+	    else if (d->type == "matrix")
+		return alloc_var(std::dynamic_pointer_cast<R_Matrix>(d)->value);
+	    else if (d->type == "double")
+		return alloc_var(std::dynamic_pointer_cast<R_Double>(d)->value);
+	    else if (d->type == "list") {
+		// count the length of the list
+		int len = 0;
+		for (auto& kv : std::static_pointer_cast<R_List>(d)->intidx_value) {
+		    if (kv.first <= 0) {
+			LOG_WARNING("invalid integer index, do nothing");
+			return nullptr;
+		    }
+		    if (kv.first > len)
+			len = kv.first;
+		}
+		int max_intidx = len;
+		len += std::static_pointer_cast<R_List>(d)->stridx_value.size();
+		
+		SEXP res = PROTECT(allocVector(VECSXP, len));
+		SEXP nms = PROTECT(allocVector(STRSXP, len));
+		for (auto& kv : std::static_pointer_cast<R_List>(d)->intidx_value) {
+		    SEXP elem = PROTECT(alloc_var(kv.second));
+		    SET_VECTOR_ELT(res, kv.first-1, elem);
+		    UNPROTECT(1);
+		}
+
+		int i = max_intidx;
+		for (auto& kv : std::static_pointer_cast<R_List>(d)->stridx_value) {
+		    SEXP elem = PROTECT(alloc_var(kv.second));
+		    SET_VECTOR_ELT(res, i, elem);
+		    SET_STRING_ELT(nms, i, Rf_mkCharLen(kv.first.c_str(),kv.first.size()));
+		    i++;		    
+		}
+		setAttrib(res, R_NamesSymbol, nms);
+		
+		UNPROTECT(2);
+		return res;
+	    } else if (d->type == "unknown") {
 		LOG_WARNING("unknown type, do nothing");
-		break;
-	    default:
-		TODO; // not implemented yet
-		break;
+		return nullptr;
 	    }
+	    
+	    TODO; // not implemented yet
+	    return nullptr;
 	}
-	
+	template<class T>
+	typename std::enable_if<std::is_base_of<R_Base, T>::value, SEXP>::type
+	define_var(const std::string& n, std::shared_ptr<T> d) {
+	    SEXP data, variableName;
+	    data = PROTECT(alloc_var(d));
+	    PROTECT(variableName = Rf_install(n.c_str()));
+	    Rf_defineVar(variableName, data, R_GlobalEnv);
+	    UNPROTECT(2);
+	    return data;
+	}
 	// bracket sugar
 	// Usage
 	// Rembed["varname"] = var;
