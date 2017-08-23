@@ -36,7 +36,7 @@ For mutivariate distribution (/mvnorm/) quantile functions are not implemented.
   4. Add likelihood ratio function to each distribution (used in Metropolis-Hasting algorithm)
   5. Make arguments /const/ wherever possible
 
-* Bottle net of performance
+* Bottle neck of performance
 ** /brmath/
-   From profiling, the /pnorm/ function is the bottle net for truncated normal sampling. Maybe adding
+   From profiling, the /pnorm/ function is the bottle neck for truncated normal sampling. Maybe adding
    /const/ to those functions' arguments can help improve it.
