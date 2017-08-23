@@ -337,10 +337,12 @@ namespace bnc {
 	    UNPROTECT(2);
 	    return SUCCESS;		
 	}
+	
 	Status eval(const std::string & line) {
 	    SEXP ans;
 	    return eval(line, ans);
 	}
+	
 	Status eval(const std::string & line, double & d) {
 	    SEXP ans;
 	    Status rc = eval(line, ans);
@@ -354,6 +356,7 @@ namespace bnc {
 		return INVALID_OUTPUT;
 	    }
 	}
+	
 	Status eval(const std::string & line, Vector & v) {
 	    SEXP ans;
 	    Status rc = eval(line, ans);
@@ -370,6 +373,7 @@ namespace bnc {
 		return INVALID_OUTPUT;
 	    }
 	}
+	
 	Status eval(const std::string & line, Matrix & m) {	    
 	    SEXP ans;
 	    Status rc = eval(line, ans);
@@ -426,6 +430,7 @@ namespace bnc {
 	    UNPROTECT(2);
 	    return data;
 	}
+	
 	SEXP alloc_var(const Vector& v) {
 	    SEXP data;
 	    PROTECT(data = Rf_allocVector(REALSXP, v.size()));
@@ -433,6 +438,7 @@ namespace bnc {
 	    UNPROTECT(1);
 	    return data;
 	}
+	
 	SEXP define_var(const std::string& n, const Vector& v) {
 	    SEXP data, variableName;
 	    data = PROTECT(alloc_var(v));
@@ -441,6 +447,7 @@ namespace bnc {
 	    UNPROTECT(2);
 	    return data;
 	}
+	
 	SEXP alloc_var(const Matrix& m) {
 	    SEXP data;
 	    PROTECT(data = Rf_allocMatrix(REALSXP, m.rows(), m.cols()));
@@ -452,6 +459,7 @@ namespace bnc {
 	    UNPROTECT(1);
 	    return data;
 	}
+	
 	SEXP define_var(const std::string& n, const Matrix& m) {
 	    SEXP data, variableName;
 	    data = PROTECT(alloc_var(m));
@@ -460,6 +468,7 @@ namespace bnc {
 	    UNPROTECT(2);
 	    return data;
 	}
+	
 	// for std::vector<int>, std::vector<double> etc.
 	template<class T>
 	typename std::enable_if<std::is_arithmetic<T>::value, SEXP>::type
@@ -473,6 +482,7 @@ namespace bnc {
 	    UNPROTECT(2);
 	    return data;
 	}
+	
 	// define a name list of vectors
 	SEXP define_var(const std::string& n, std::map<std::string, Vector> m) {
 	    SEXP nms = PROTECT(allocVector(STRSXP, m.size()));
@@ -495,6 +505,7 @@ namespace bnc {
 	    UNPROTECT(3);
 	    return res;
 	}
+	
 	// define a named list of vectors from map
 	template<class T>
 	SEXP define_var(const std::string& n, std::map<std::string, T> m) {
@@ -522,6 +533,7 @@ namespace bnc {
 	    UNPROTECT(3);
 	    return res;
 	}
+	
 	// get a coda mcmc list
 	template<class T>
 	SEXP map_to_coda_mcmc(std::map<std::string, T> m, const int& start=1,
@@ -568,6 +580,7 @@ namespace bnc {
 
 	    return ret;
 	}
+	
 	// define a coda mcmc object
 	template<class T>
 	SEXP define_coda_mcmc(const std::string& n, std::map<std::string, T> m,
@@ -588,6 +601,7 @@ namespace bnc {
 	    UNPROTECT(2);
 	    return res;
 	}
+	
 	// define a coda mcmc.list object
 	template<class T>
 	SEXP define_coda_mcmc_list(const std::string& n,
@@ -680,6 +694,7 @@ namespace bnc {
 	    TODO; // not implemented yet
 	    return nullptr;
 	}
+	
 	template<class T>
 	typename std::enable_if<std::is_base_of<R_Base, T>::value, SEXP>::type
 	define_var(const std::string& n, std::shared_ptr<T> d) {
@@ -690,7 +705,19 @@ namespace bnc {
 	    UNPROTECT(2);
 	    return data;
 	}
-	// bracket sugar
+
+	template<class T>
+	typename std::enable_if<std::is_base_of<R_Base, T>::value, SEXP>::type
+	define_var(const std::string& n, const T& d) {
+	    SEXP data, variableName;
+	    data = PROTECT(alloc_var(std::make_shared<T>(d)));
+	    PROTECT(variableName = Rf_install(n.c_str()));
+	    Rf_defineVar(variableName, data, R_GlobalEnv);
+	    UNPROTECT(2);
+	    return data;
+	}
+	
+        // bracket sugar
 	// Usage
 	// Rembed["varname"] = var;
 	// but not support var = Rembed["varname"]
