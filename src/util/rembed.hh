@@ -57,6 +57,80 @@ extern "C" {
 
 namespace bnc {
 
+    /* R data types */
+    class R_Base
+    {
+    public:
+	R_Base() { type = "unknown"; };
+	R_Base(const std::string& s) : type(s) {};
+	virtual ~R_Base() {};
+	std::string type;
+	virtual int size() = 0;
+    };
+
+    class R_String : public R_Base
+    {
+    public:
+	R_String(const std::string & v) : R_Base("character"),
+					  value(v) {};
+	virtual ~R_String() {};
+	R_String& operator= (const std::string & v) {
+	    value = v;
+	    return *this;
+	}
+	std::string value;
+	virtual int size() { return value.size(); }
+    };
+    
+    class R_Vector : public R_Base
+    {
+    public:
+	R_Vector(const Vector& v) : R_Base("vector"),
+				    value(v) {};
+	virtual ~R_Vector() {};
+	R_Vector& operator= (const Vector & v) {
+	    value = v;
+	    return *this;
+	}
+	Vector value;
+	virtual int size() { return value.size(); }	
+    };
+
+    class R_Matrix : public R_Base
+    {
+    public:
+	R_Matrix(const Vector& v) : R_Base("matrix"),
+				    value(v) {};
+	virtual ~R_Matrix() {};
+	R_Matrix& operator= (const Matrix & v) {
+	    value = v;
+	    return *this;
+	}
+	Matrix value;
+	std::vector<std::string> rownames;
+	std::vector<std::string> colnames;
+	virtual int size() { return value.size(); }
+    };
+
+    class R_List : public R_Base
+    {
+    public:
+	R_List() : R_Base("list") {};
+	virtual ~R_List() {};
+
+	std::map<std::string, std::shared_ptr<R_Base>> stridx_value;
+	std::map<int, std::shared_ptr<R_Base>> intidx_value;
+
+	virtual int size() { return stridx_value.size() + intidx_value.size(); }
+    };
+
+    
+    /*
+     * REmbed (including REnvironment) is the 
+     * main interface to R process.
+     *
+     */
+    
     class REmbed;
 
     struct REnvironment {
